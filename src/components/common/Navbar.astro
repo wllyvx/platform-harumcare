@@ -1,0 +1,73 @@
+<header class="bg-white shadow-md sticky top-0 z-50">
+  <div class="container mx-auto px-4">
+    <nav class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <div class="flex-shrink-0">
+        <a href="/" class="flex items-center">
+          <!-- Jika ada logo, tambahkan di sini -->
+          <!-- <img src="/path-to-logo.svg" alt="Harum Care Logo" class="h-8 w-auto mr-2"> -->
+          <img src="/images/logo/logo.png" alt="" class="w-30 md:w-40">
+        </a>
+      </div>
+      
+      <!-- Menu Desktop -->
+      <div class="hidden md:block">
+        <ul class="flex space-x-8">
+          <li><a href="/" class="text-gray-700 hover:text-blue-600 font-medium transition duration-200">Beranda</a></li>
+          <li><a href="/campaigns" class="text-gray-700 hover:text-blue-600 font-medium transition duration-200">Kampanye</a></li>
+          <li><a href="/about" class="text-gray-700 hover:text-blue-600 font-medium transition duration-200">Tentang Kami</a></li>
+          <li><a href="/contact" class="text-gray-700 hover:text-blue-600 font-medium transition duration-200">Kontak</a></li>
+        </ul>
+      </div>
+      
+      <!-- Tombol Aksi Desktop -->
+      <div class="hidden md:flex items-center space-x-4">
+        <a href="/login" class="text-gray-700 hover:text-blue-600 font-medium transition duration-200">Masuk</a>
+        <a href="/register" class="text-gray-700 hover:text-blue-600 font-medium transition duration-200">Daftar</a>
+        <a href="#kampanye" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200">Mulai Donasi</a>
+      </div>
+      
+      <!-- Tombol Menu Mobile -->
+      <div class="md:hidden">
+        <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-600 focus:outline-none">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            <path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </nav>
+    
+    <!-- Menu Mobile -->
+    <div id="mobile-menu" class="hidden md:hidden pb-4">
+      <ul class="space-y-2">
+        <li><a href="/" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md">Beranda</a></li>
+        <li><a href="/campaigns" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md">Kampanye</a></li>
+        <li><a href="/about" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md">Tentang Kami</a></li>
+        <li><a href="/contact" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md">Kontak</a></li>
+        <li class="border-t border-gray-200 my-2"></li>
+        <li><a href="/login" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md">Masuk</a></li>
+        <li><a href="/register" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md">Daftar</a></li>
+        <li><a href="#kampanye" class="block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md mt-2">Mulai Donasi</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  // Toggle menu mobile
+  document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+    
+    if (mobileMenuButton && mobileMenu) {
+      mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+        menuIcon.classList.toggle('hidden');
+        closeIcon.classList.toggle('hidden');
+      });
+    }
+  });
+</script>

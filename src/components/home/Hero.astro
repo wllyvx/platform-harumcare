@@ -1,0 +1,65 @@
+<section class="relative h-[80vh] overflow-hidden">
+    <!-- Background Slideshow -->
+    <div id="slideshow" aria-label="Galeri foto kampanye">
+      <div class="slide absolute inset-0 transition-opacity duration-1000 bg-cover bg-center" style="background-image: url('/images/slide1.jpg')"></div>
+      <div class="slide absolute inset-0 transition-opacity duration-1000 bg-cover bg-center" style="background-image: url('/images/slide2.jpg')"></div>
+      <div class="slide absolute inset-0 transition-opacity duration-1000 bg-cover bg-center" style="background-image: url('/images/slide3.jpg')"></div>
+    </div>
+
+    <!-- Teks di atas slideshow -->
+    <div class="relative z-10 flex items-center justify-center h-full bg-black/40  text-white text-center px-4">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+          Selamat Datang di Harum Care Indonesia
+        </h1>
+        <p class="text-xl">
+          Platform penggalangan donasi terpercaya dan transparan
+        </p>
+        <a href="/kampanye" class="mt-6 inline-block px-6 py-3 bg-green-600 text-white rounded-lg">
+          Lihat Kampanye
+        </a>
+      </div>
+      <div class="absolute bottom-5 left-0 right-0 flex justify-center gap-2">
+        <button class="h-2 w-8 rounded-full bg-white/60 indicator" data-index="0"></button>
+        <button class="h-2 w-8 rounded-full bg-white/30 indicator" data-index="1"></button>
+        <button class="h-2 w-8 rounded-full bg-white/30 indicator" data-index="2"></button>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+  document.addEventListener("DOMContentLoaded", () => {
+    let current = 0;
+    const slides = document.querySelectorAll(".slide");
+    const indicator = document.querySelectorAll(".indicator")
+    const total = slides.length;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.style.opacity = i === index ? "1" : "0";
+      });
+      indicator?.forEach((indicator, i) => {
+        indicator.classList.toggle("bg-white/60", i === index);
+        indicator.classList.toggle("bg-white/30", i !== index);
+      })
+    }
+
+    function nextSlide() {
+      current = (current + 1) % total;
+      showSlide(current);
+    }
+
+    indicator?.forEach((indicator, i) => {
+    indicator.addEventListener("click", () => {
+      current = i;
+      showSlide(current);
+      // Reset timer
+      clearInterval(slideInterval);
+      slideInterval = setInterval(nextSlide, 5000);
+    });
+  });
+
+    showSlide(current);
+    setInterval(nextSlide, 5000); // 5 detik
+  });
+</script>
