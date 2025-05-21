@@ -2,6 +2,7 @@
 // DonationCard.astro
 // Props untuk komponen card donasi
 interface Props {
+  id: string;
   title: string;
   description: string;
   imageUrl: string;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const {
+  id,
   title,
   description,
   imageUrl,
@@ -93,8 +95,10 @@ const trimmedDescription = description.length > 120 ? `${description.substring(0
     </div>
     
     <!-- Tombol donasi -->
-    <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300">
-      Donasi Sekarang
-    </button>
+    <a href={`/campaign/${id}`}
+      <button class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300">
+        Donasi Sekarang
+      </button>
+    </a>
   </div>
 </div>

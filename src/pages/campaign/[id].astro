@@ -1,0 +1,87 @@
+---
+import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
+import { mockCampaigns } from "../../data/campaign";
+
+export async function getStaticPaths() {
+    return mockCampaigns.map((campaign) => ({
+        params: { id: campaign.id},
+        props: { campaign },
+    }));
+}
+
+const { id } = Astro.params;
+const { campaign } = Astro.props || {};
+
+// jumlah hari tersisa
+const today = new Date();
+const endDate = new Date(campaign.endDate);
+const timeDiff = endDate.getTime() - today.getTime();
+const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+// presentase donasi terkumpul
+const percentageFunded = Math.min(Math.round((campaign.currentAmount / campaign.targetAmount) * 100), 100);
+
+// format angka ke format rupiah 
+const formatCurrency = (amount:number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
+// format tanggal
+
+---
+
+<PrimaryLayout>
+    <section class="w-full relative">
+        <div class="w-full h-[300px] md:h-[400px] lg:h-[500px] bg-gray-300 relative overflow-hidden">
+            <img 
+                src={campaign.imageUrl} 
+                alt={campaign.title} 
+                class="w-full h-full object-cover"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                <div class="container mx-auto px-4 pb-8 md:pb-16">
+                <span class="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full mb-4">
+                    {campaign.category}
+                </span>
+                <h1 class="text-white text-2xl md:text-4xl lg:text-5xl font-bold max-w-4xl">{campaign.title}</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="lg:w-1/3">
+        <!-- Sticky Donation Card -->
+        <div class="sticky top-8 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+          <!-- Progress Section -->
+          <div class="p-6">
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-2">
+                <span class="font-semibold text-blue-600">{formatCurrency(campaign.currentAmount)}</span>
+                <span class="text-gray-500">dari {formatCurrency(campaign.targetAmount)}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full" style={`width: ${percentageFunded}%`}></div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+              <div class="bg-gray-50 p-2 rounded">
+                <p class="text-xs text-gray-500">Terkumpul</p>
+                <p class="font-semibold text-gray-800">{percentageFunded}%</p>
+              </div>
+              <div class="bg-gray-50 p-2 rounded">
+                <p class="text-xs text-gray-500">Donatur</p>
+                <p class="font-semibold text-gray-800">{campaign.donorCount}</p>
+              </div>
+              <div class="bg-gray-50 p-2 rounded">
+                <p class="text-xs text-gray-500">Sisa Hari</p>
+                <p class="font-semibold text-gray-800">{daysLeft}</p>
+              </div>
+            </div>
+    </section>
+</PrimaryLayout>

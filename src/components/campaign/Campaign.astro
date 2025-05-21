@@ -1,8 +1,7 @@
 ---
-// CampaignSection.astro
 import Card from '../common/Card.astro';
 
-// Props untuk section campaign
+// props
 interface Props {
   title?: string;
   subtitle?: string;
@@ -31,8 +30,10 @@ const {
   viewAllLink = "/campaigns"
 } = Astro.props;
 
-// Fungsi untuk memfilter campaigns agar hanya menampilkan 6 kampanye
+// filter maksimal 6 campaign
 const featuredCampaigns = campaigns.slice(0, 6);
+
+
 ---
 
 <section class="campaign-section  relative mt-[-4rem] md:mt-[-6rem] px-4 py-16 z-10">
@@ -48,6 +49,7 @@ const featuredCampaigns = campaigns.slice(0, 6);
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {featuredCampaigns.map((campaign) => (
           <Card
+            id={campaign.id}
             title={campaign.title}
             description={campaign.description}
             imageUrl={campaign.imageUrl}
