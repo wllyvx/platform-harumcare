@@ -1,0 +1,100 @@
+---
+// DonationCard.astro
+// Props untuk komponen card donasi
+interface Props {
+  title: string;
+  description: string;
+  imageUrl: string;
+  targetAmount: number;
+  currentAmount: number;
+  daysLeft: number;
+  donorCount: number;
+  organizationName: string;
+  organizationLogo: string;
+  category: string;
+}
+
+const {
+  title,
+  description,
+  imageUrl,
+  targetAmount,
+  currentAmount,
+  daysLeft,
+  donorCount,
+  organizationName,
+  organizationLogo,
+  category
+} = Astro.props;
+
+// Hitung persentase donasi yang sudah terkumpul
+const percentageFunded = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+
+// Format angka ke format mata uang Rupiah
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
+// Trim deskripsi jika terlalu panjang
+const trimmedDescription = description.length > 120 ? `${description.substring(0, 120)}...` : description;
+---
+
+<div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 max-w-sm">
+  <!-- Badge kategori -->
+  <div class="relative">
+    <img src={imageUrl} alt={title} class="w-full h-48 object-cover" />
+    <span class="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+      {category}
+    </span>
+  </div>
+  
+  <div class="p-5">
+    <!-- Detail donasi -->
+    <div class="mb-4">
+      <h3 class="font-bold text-xl mb-2 text-gray-800 line-clamp-2">{title}</h3>
+      <p class="text-gray-600 text-sm mb-4 line-clamp-3">{trimmedDescription}</p>
+      
+      <!-- Progress bar -->
+      <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+        <div class="bg-blue-600 h-2.5 rounded-full" style={`width: ${percentageFunded}%`}></div>
+      </div>
+      
+      <div class="flex justify-between text-sm mb-4">
+        <span class="font-semibold text-blue-600">{formatCurrency(currentAmount)}</span>
+        <span class="text-gray-500">dari {formatCurrency(targetAmount)}</span>
+      </div>
+    </div>
+    
+    <!-- Info tambahan -->
+    <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+      <div class="bg-gray-50 p-2 rounded">
+        <p class="text-xs text-gray-500">Terkumpul</p>
+        <p class="font-semibold text-gray-800">{percentageFunded}%</p>
+      </div>
+      <div class="bg-gray-50 p-2 rounded">
+        <p class="text-xs text-gray-500">Donatur</p>
+        <p class="font-semibold text-gray-800">{donorCount}</p>
+      </div>
+      <div class="bg-gray-50 p-2 rounded">
+        <p class="text-xs text-gray-500">Sisa Hari</p>
+        <p class="font-semibold text-gray-800">{daysLeft}</p>
+      </div>
+    </div>
+    
+    <!-- Informasi penggalang dana -->
+    <div class="flex items-center mb-4">
+      <img src={organizationLogo} alt={organizationName} class="w-8 h-8 rounded-full mr-2 object-cover" />
+      <span class="text-sm text-gray-600">Oleh <span class="font-medium">{organizationName}</span></span>
+    </div>
+    
+    <!-- Tombol donasi -->
+    <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300">
+      Donasi Sekarang
+    </button>
+  </div>
+</div>
