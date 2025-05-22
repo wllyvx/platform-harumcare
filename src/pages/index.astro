@@ -2,14 +2,30 @@
 import PrimaryLayout from "../layouts/PrimaryLayout.astro"
 import Campaign from "../components/campaign/Campaign.astro"
 import Hero from "../components/home/Hero.astro"
-import { mockCampaigns } from "../data/campaign";
+
+// fetch API
+async function fetchCampaigns() {
+  try {
+    const response = await fetch('http://localhost:3000/api/campaigns');
+    if (!response.ok) {
+      throw new Error('Failed to fetch campaigns');
+    }
+    const campaigns = await response.json();
+    return campaigns;
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    return [];
+  }
+}
+
+const campaigns = await fetchCampaigns();
 
 ---
 
 <PrimaryLayout>
   <Hero />
   <Campaign 
-    campaigns={mockCampaigns}
+    campaigns={campaigns}
     title="Kampanye Pilihan"
     subtitle="Pilih kampanye yang sesuai dengan kepedulian Anda dan mulai berbagi kebaikan hari ini"
   />

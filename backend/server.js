@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const { authenticateToken, restrictToAdmin } = require('./middleware/auth');
 
 dotenv.config();
 
@@ -23,9 +24,16 @@ app.get('/', (req, res) => {
   res.send('Backend for Astro project is running');
 });
 
+// autentikasi
+const authRoutes = require('./routes/campaigns');
+app.use('/api/auth', authRoutes);
+
 // import rute
 const campaignRoutes = require('./routes/campaigns');
 app.use('/api/campaigns', campaignRoutes);
+
+// proteksi POST admin
+app.use('/api/campaigns', authenticateToken, restrictToAdmin, campaignRoutes);
 
 // jalanin server
 app.listen(port, () => {

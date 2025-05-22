@@ -1,4 +1,5 @@
 ---
+import type { ObjectId } from 'mongoose';
 import Card from '../common/Card.astro';
 
 // props
@@ -6,7 +7,7 @@ interface Props {
   title?: string;
   subtitle?: string;
   campaigns: Array<{
-    id: string;
+    _id: ObjectId;
     title: string;
     description: string;
     imageUrl: string;
@@ -27,7 +28,7 @@ const {
   subtitle = "Pilih kampanye yang sesuai dengan kepedulian Anda dan mulai berbagi kebaikan",
   campaigns = [],
   showViewAll = true,
-  viewAllLink = "/campaigns"
+  viewAllLink = "/full-campaigns"
 } = Astro.props;
 
 
@@ -57,17 +58,17 @@ const featuredCampaigns = campaignsWithDaysLeft.slice(0, 6);
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {featuredCampaigns.map((campaign) => (
           <Card
-            id={campaign.id}
-            title={campaign.title}
-            description={campaign.description}
+            _id={campaign._id}
+            title={campaign.title || 'Untitled'}
+            description={campaign.description || 'Tidak ada Deskripsi'}
             imageUrl={campaign.imageUrl}
             targetAmount={campaign.targetAmount}
             currentAmount={campaign.currentAmount}
             daysLeft={campaign.daysLeft}
             donorCount={campaign.donorCount}
-            organizationName={campaign.organizationName}
+            organizationName={campaign.organizationName || 'Anonymous'}
             organizationLogo={campaign.organizationLogo}
-            category={campaign.category}
+            category={campaign.category || 'Tidak Berkategori'}
           />
         ))}
       </div>
