@@ -25,10 +25,10 @@ app.get('/', (req, res) => {
 });
 
 // autentikasi
-const authRoutes = require('./routes/campaigns');
+const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-// import rute
+// campaign
 const campaignRoutes = require('./routes/campaigns');
 app.use('/api/campaigns', campaignRoutes);
 
