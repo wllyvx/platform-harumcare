@@ -1,0 +1,219 @@
+---
+import PrimaryLayout from "../layouts/PrimaryLayout.astro";
+
+// Fungsi create campaign (dibiarkan di frontmatter untuk akses server-side jika diperlukan nanti)
+async function createCampaign(data) {
+  try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const response = await fetch('http://localhost:3000/api/campaigns', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create campaign');
+    }
+    const newCampaign = await response.json();
+    return newCampaign;
+  } catch (error) {
+    console.error('Error creating campaign:', error.message);
+    return null;
+  }
+}
+---
+
+<PrimaryLayout>
+  <section id="create-section" class="create-campaign-section max-w-7xl mx-auto px-4 py-16" style="display: none;">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Create New Campaign</h2>
+    <form id="create-campaign-form" class="max-w-md mx-auto">
+      <div class="mb-6">
+        <label for="title-input" class="block text-gray-600 mb-2">Title</label>
+        <input
+          type="text"
+          name="title"
+          required
+          id="title-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="description-input" class="block text-gray-600 mb-2">Description</label>
+        <textarea
+          name="description"
+          id="description-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        ></textarea>
+      </div>
+      <div class="mb-6">
+        <label for="imageUrl-input" class="block text-gray-600 mb-2">Image URL</label>
+        <input
+          type="text"
+          name="imageUrl"
+          id="imageUrl-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="targetAmount-input" class="block text-gray-600 mb-2">Target Amount</label>
+        <input
+          type="number"
+          name="targetAmount"
+          required
+          id="targetAmount-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="currentAmount-input" class="block text-gray-600 mb-2">Current Amount</label>
+        <input
+          type="number"
+          name="currentAmount"
+          id="currentAmount-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="startDate-input" class="block text-gray-600 mb-2">Start Date</label>
+        <input
+          type="date"
+          name="startDate"
+          required
+          id="startDate-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="endDate-input" class="block text-gray-600 mb-2">End Date</label>
+        <input
+          type="date"
+          name="endDate"
+          required
+          id="endDate-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="donorCount-input" class="block text-gray-600 mb-2">Donor Count</label>
+        <input
+          type="number"
+          name="donorCount"
+          id="donorCount-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="organizationName-input" class="block text-gray-600 mb-2">Organization Name</label>
+        <input
+          type="text"
+          name="organizationName"
+          id="organizationName-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="organizationLogo-input" class="block text-gray-600 mb-2">Organization Logo URL</label>
+        <input
+          type="text"
+          name="organizationLogo"
+          id="organizationLogo-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <div class="mb-8">
+        <label for="category-input" class="block text-gray-600 mb-2">Category</label>
+        <input
+          type="text"
+          name="category"
+          id="category-input"
+          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300"
+      >
+        Create Campaign
+      </button>
+    </form>
+  </section>
+</PrimaryLayout>
+
+<script>
+  // Fungsi create campaign (dapat diakses di klien)
+  async function createCampaign(data) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create campaign');
+      }
+      const newCampaign = await response.json();
+      return newCampaign;
+    } catch (error) {
+      console.error('Error creating campaign:', error.message);
+      return null;
+    }
+  }
+
+  // Periksa role dan tampilkan form hanya untuk admin
+  window.addEventListener('load', () => {
+    const createSection = document.querySelector('#create-section');
+    const userRole = localStorage.getItem('role');
+    console.log('Checking role - userRole:', userRole);
+
+    if (createSection) {
+      if (userRole === 'admin') {
+        createSection.style.display = 'block';
+      } else {
+        console.log('User is not admin, redirecting to /');
+        window.location.href = '/';
+      }
+    } else {
+      console.error('Create section not found in DOM');
+    }
+
+    const createForm = document.querySelector('#create-campaign-form');
+    if (createForm) {
+      console.log('Create campaign form found, adding event listener...');
+      createForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        console.log('Create campaign form submitted');
+        const formData = {
+          title: document.querySelector('#title-input').value,
+          description: document.querySelector('#description-input').value,
+          imageUrl: document.querySelector('#imageUrl-input').value,
+          targetAmount: Number(document.querySelector('#targetAmount-input').value),
+          currentAmount: Number(document.querySelector('#currentAmount-input').value) || 0,
+          startDate: document.querySelector('#startDate-input').value,
+          endDate: document.querySelector('#endDate-input').value,
+          donorCount: Number(document.querySelector('#donorCount-input').value) || 0,
+          organizationName: document.querySelector('#organizationName-input').value,
+          organizationLogo: document.querySelector('#organizationLogo-input').value,
+          category: document.querySelector('#category-input').value,
+        };
+        console.log('Sending create campaign request with:', formData);
+        const newCampaign = await createCampaign(formData);
+        console.log('Create campaign response:', newCampaign);
+        if (newCampaign) {
+          window.location.href = '/'; // Redirect ke halaman utama setelah berhasil
+          console.log('Campaign created, redirecting to home');
+        } else {
+          alert('Failed to create campaign.');
+          console.log('Failed to create campaign');
+        }
+      });
+    } else {
+      console.error('Create campaign form not found in DOM');
+    }
+  });
+</script>

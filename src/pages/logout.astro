@@ -1,0 +1,18 @@
+---
+import PrimaryLayout from "../layouts/PrimaryLayout.astro";
+
+// Hapus token dan role dari localStorage
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+}
+
+// Redirect ke halaman utama
+return Astro.redirect('/');
+---
+
+<PrimaryLayout>
+  <section class="logout-section max-w-7xl mx-auto px-4 py-16">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Logging Out...</h2>
+  </section>
+</PrimaryLayout>
