@@ -23,18 +23,6 @@ const campaigns = await fetchCampaigns();
 
 <PrimaryLayout>
   <Hero />
-
-  <!-- Navigasi -->
-  <nav id="nav" class="max-w-7xl mx-auto px-4 py-4">
-    <div class="flex justify-between items-center">
-      <a href="/" class="text-blue-600 font-medium hover:underline">Home</a>
-      <div id="auth-nav">
-        <!-- Placeholder, akan diisi oleh JavaScript -->
-        <span class="text-gray-600">Loading...</span>
-      </div>
-    </div>
-  </nav>
-
   <Campaign
     campaigns={campaigns}
     title="Kampanye Pilihan"
@@ -42,57 +30,3 @@ const campaigns = await fetchCampaigns();
   />
 </PrimaryLayout>
 
-<script>
-  // Fungsi untuk memperbarui navigasi berdasarkan status login
-  function updateNav() {
-    const authNav = document.querySelector('#auth-nav');
-    const userToken = localStorage.getItem('token');
-    const userRole = localStorage.getItem('role');
-
-    console.log('Updating nav - userToken:', userToken, 'userRole:', userRole);
-
-    if (authNav) {
-      if (userToken) {
-        authNav.innerHTML = `
-          <span class="text-gray-600">Welcome, ${userRole} | 
-            <a href="/logout" id="logout-link" class="text-blue-600 hover:underline">Logout</a>
-          </span>
-          ${userRole === 'admin' ? '<a href="/create-campaign" class="ml-4 text-blue-600 font-medium hover:underline">Create Campaign</a>' : ''}
-        `;
-      } else {
-        authNav.innerHTML = `
-          <a href="/login" class="text-blue-600 font-medium hover:underline">Login</a>
-        `;
-      }
-    }
-  }
-
-  // Panggil updateNav saat halaman dimuat
-  window.addEventListener('load', () => {
-    updateNav();
-
-    // Tambahkan event listener untuk tombol logout
-    const logoutLink = document.querySelector('#logout-link');
-    if (logoutLink) {
-      logoutLink.addEventListener('click', (event) => {
-        event.preventDefault();
-        console.log('Logging out...');
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        window.location.href = '/';
-      });
-    }
-  });
-
-  // Perbarui navigasi jika localStorage berubah
-  window.addEventListener('storage', updateNav);
-
-  // Perbarui navigasi saat kembali ke halaman
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-      // Halaman dimuat dari cache (misalnya, setelah tombol back)
-      console.log('Page loaded from cache, updating nav...');
-      updateNav();
-    }
-  });
-</script>
