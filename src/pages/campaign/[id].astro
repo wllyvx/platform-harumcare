@@ -1,5 +1,7 @@
 ---
 import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
+import type { ObjectId } from 'mongoose';
+
 
 // Ekspor getStaticPaths
 export async function getStaticPaths() {
@@ -29,6 +31,22 @@ export async function getStaticPaths() {
     console.error('Failed to fetch campaign list:', error.message);
     return [];
   }
+}
+
+interface Props {
+  campaign: Array<{
+    _id: ObjectId;
+    title: string;
+    description: string;
+    imageUrl: string;
+    targetAmount: number;
+    currentAmount: number;
+    endDate: string;
+    donorCount: number;
+    organizationName: string;
+    organizationLogo: string;
+    category: string;
+  }>;
 }
 
 // Ambil campaign dari props yang dikirim oleh getStaticPaths
