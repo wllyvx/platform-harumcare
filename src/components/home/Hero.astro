@@ -52,8 +52,8 @@
       current = i;
       showSlide(current);
       // Reset timer
-      clearInterval(slideInterval);
       slideInterval = setInterval(nextSlide, 5000);
+      clearInterval(slideInterval);
     });
   });
 
