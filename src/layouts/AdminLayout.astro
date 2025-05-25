@@ -15,7 +15,7 @@ import "../styles/global.css";
   </head>
   <body class="flex w-full">
     <header>
-      <nav>
+      <nav class="bg-blue-400">
         <div class="flex-shrink-0">
           <a href="/" class="flex items-center">
             <img
@@ -24,10 +24,15 @@ import "../styles/global.css";
               class="h-8 w-auto mr-2"
             />
           </a>
+          <ul>
+            <li><a href="">Campaign</a></li>
+            <li><a href="">Donasi</a></li>
+            <li><a href="">User</a></li>
+          </ul>
         </div>
       </nav>
     </header>
-    <main class="container bg-blue-400">
+    <main class="container">
       <slot />
     </main>
   </body>
