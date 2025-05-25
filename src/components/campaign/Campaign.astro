@@ -1,4 +1,5 @@
 ---
+import type { ObjectId } from 'mongoose';
 import Card from '../common/Card.astro';
 
 // props
@@ -6,7 +7,7 @@ interface Props {
   title?: string;
   subtitle?: string;
   campaigns: Array<{
-    id: string;
+    _id: ObjectId;
     title: string;
     description: string;
     imageUrl: string;
@@ -27,7 +28,7 @@ const {
   subtitle = "Pilih kampanye yang sesuai dengan kepedulian Anda dan mulai berbagi kebaikan",
   campaigns = [],
   showViewAll = true,
-  viewAllLink = "/campaigns"
+  viewAllLink = "/full-campaigns"
 } = Astro.props;
 
 
@@ -44,7 +45,7 @@ const campaignsWithDaysLeft = campaigns.map((campaign) => {
 const featuredCampaigns = campaignsWithDaysLeft.slice(0, 6);
 ---
 
-<section class="campaign-section  relative mt-[-4rem] md:mt-[-6rem] px-4 py-16 z-10">
+<section class="campaign-section -mt-6 md:-mt-8 relative  px-4 py-16 z-10">
   <div class="campaign-container max-w-7xl mx-auto">
     <!-- Header Section -->
     <div class="text-center mb-10 md:mb-16">
@@ -54,20 +55,20 @@ const featuredCampaigns = campaignsWithDaysLeft.slice(0, 6);
 
     <!-- Campaign Cards -->
     {featuredCampaigns.length > 0 ? (
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 place-content-center">
         {featuredCampaigns.map((campaign) => (
           <Card
-            id={campaign.id}
-            title={campaign.title}
-            description={campaign.description}
+            _id={campaign._id}
+            title={campaign.title || 'Untitled'}
+            description={campaign.description || 'Tidak ada Deskripsi'}
             imageUrl={campaign.imageUrl}
             targetAmount={campaign.targetAmount}
             currentAmount={campaign.currentAmount}
             daysLeft={campaign.daysLeft}
             donorCount={campaign.donorCount}
-            organizationName={campaign.organizationName}
+            organizationName={campaign.organizationName || 'Anonymous'}
             organizationLogo={campaign.organizationLogo}
-            category={campaign.category}
+            category={campaign.category || 'Tidak Berkategori'}
           />
         ))}
       </div>

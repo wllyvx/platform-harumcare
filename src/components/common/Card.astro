@@ -1,7 +1,9 @@
 ---
+import type { ObjectId } from 'mongoose';
+
 // Props untuk komponen card donasi
 interface Props {
-  id: string;
+  _id: ObjectId;
   title: string;
   description: string;
   imageUrl: string;
@@ -15,7 +17,7 @@ interface Props {
 }
 
 const {
-  id,
+  _id,
   title,
   description,
   imageUrl,
@@ -94,7 +96,7 @@ const trimmedDescription = description.length > 120 ? `${description.substring(0
     </div>
     
     <!-- Tombol donasi -->
-    <a href={`/campaign/${id}`}
+    <a href={`/campaign/${_id}`}
       <button class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300">
         Donasi Sekarang
       </button>
