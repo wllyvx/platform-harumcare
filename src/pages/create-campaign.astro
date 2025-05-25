@@ -28,7 +28,7 @@ async function createCampaign(data) {
 <PrimaryLayout>
   <section id="create-section" class="create-campaign-section max-w-7xl mx-auto px-4 py-16" style="display: none;">
     <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Create New Campaign</h2>
-    <form id="create-campaign-form" class="max-w-md mx-auto">
+    <form id="create-campaign-form" class="max-w-md mx-auto" enctype="multipart/form-data">
       <div class="mb-6">
         <label for="title-input" class="block text-gray-600 mb-2">Title</label>
         <input
@@ -44,17 +44,25 @@ async function createCampaign(data) {
         <textarea
           name="description"
           id="description-input"
+          rows="4"
           class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
         ></textarea>
       </div>
       <div class="mb-6">
-        <label for="imageUrl-input" class="block text-gray-600 mb-2">Image URL</label>
-        <input
-          type="text"
-          name="imageUrl"
-          id="imageUrl-input"
-          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
+        <label for="image-input" class="block text-gray-600 mb-2">Campaign Image</label>
+        <div class="space-y-4">
+          <input
+            type="file"
+            name="image"
+            id="image-input"
+            accept="image/*"
+            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          <div id="image-preview" class="hidden">
+            <img id="preview-img" src="" alt="Preview" class="w-full max-w-xs mx-auto rounded-lg shadow-md" />
+            <p class="text-sm text-gray-500 text-center mt-2">Image Preview</p>
+          </div>
+        </div>
       </div>
       <div class="mb-6">
         <label for="targetAmount-input" class="block text-gray-600 mb-2">Target Amount</label>
@@ -114,34 +122,78 @@ async function createCampaign(data) {
         />
       </div>
       <div class="mb-6">
-        <label for="organizationLogo-input" class="block text-gray-600 mb-2">Organization Logo URL</label>
-        <input
-          type="text"
-          name="organizationLogo"
-          id="organizationLogo-input"
-          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
+        <label for="organizationLogo-input" class="block text-gray-600 mb-2">Organization Logo</label>
+        <div class="space-y-4">
+          <input
+            type="file"
+            name="organizationLogo"
+            id="organizationLogo-input"
+            accept="image/*"
+            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+          />
+          <div id="logo-preview" class="hidden">
+            <img id="preview-logo" src="" alt="Logo Preview" class="w-24 h-24 mx-auto rounded-lg shadow-md object-cover" />
+            <p class="text-sm text-gray-500 text-center mt-2">Logo Preview</p>
+          </div>
+        </div>
       </div>
       <div class="mb-8">
         <label for="category-input" class="block text-gray-600 mb-2">Category</label>
-        <input
-          type="text"
+        <select
           name="category"
           id="category-input"
           class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
+        >
+          <option value="">Select Category</option>
+          <option value="health">Health</option>
+          <option value="education">Education</option>
+          <option value="environment">Environment</option>
+          <option value="disaster">Disaster Relief</option>
+          <option value="poverty">Poverty</option>
+          <option value="animals">Animals</option>
+          <option value="other">Other</option>
+        </select>
       </div>
       <button
         type="submit"
-        class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300"
+        id="submit-btn"
+        class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        Create Campaign
+        <span id="submit-text">Create Campaign</span>
+        <span id="loading-text" class="hidden">Creating...</span>
       </button>
     </form>
   </section>
 </PrimaryLayout>
 
 <script>
+  // Fungsi untuk upload gambar ke server
+  async function uploadImage(file) {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+      
+      const result = await response.json();
+      return result.imageUrl; // Asumsi server mengembalikan { imageUrl: "path/to/image" }
+    } catch (error) {
+      console.error('Error uploading image:', error.message);
+      return null;
+    }
+  }
+
   // Fungsi create campaign (dapat diakses di klien)
   async function createCampaign(data) {
     try {
@@ -165,6 +217,29 @@ async function createCampaign(data) {
     }
   }
 
+  // Fungsi untuk preview gambar
+  function setupImagePreview(inputId, previewId, imgId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const img = document.getElementById(imgId);
+    
+    if (input && preview && img) {
+      input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            img.src = e.target.result;
+            preview.classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        } else {
+          preview.classList.add('hidden');
+        }
+      });
+    }
+  }
+
   // Periksa role dan tampilkan form hanya untuk admin
   window.addEventListener('load', () => {
     const createSection = document.querySelector('#create-section');
@@ -182,34 +257,82 @@ async function createCampaign(data) {
       console.error('Create section not found in DOM');
     }
 
+    // Setup image previews
+    setupImagePreview('image-input', 'image-preview', 'preview-img');
+    setupImagePreview('organizationLogo-input', 'logo-preview', 'preview-logo');
+
     const createForm = document.querySelector('#create-campaign-form');
     if (createForm) {
       console.log('Create campaign form found, adding event listener...');
       createForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         console.log('Create campaign form submitted');
-        const formData = {
-          title: document.querySelector('#title-input').value,
-          description: document.querySelector('#description-input').value,
-          imageUrl: document.querySelector('#imageUrl-input').value,
-          targetAmount: Number(document.querySelector('#targetAmount-input').value),
-          currentAmount: Number(document.querySelector('#currentAmount-input').value) || 0,
-          startDate: document.querySelector('#startDate-input').value,
-          endDate: document.querySelector('#endDate-input').value,
-          donorCount: Number(document.querySelector('#donorCount-input').value) || 0,
-          organizationName: document.querySelector('#organizationName-input').value,
-          organizationLogo: document.querySelector('#organizationLogo-input').value,
-          category: document.querySelector('#category-input').value,
-        };
-        console.log('Sending create campaign request with:', formData);
-        const newCampaign = await createCampaign(formData);
-        console.log('Create campaign response:', newCampaign);
-        if (newCampaign) {
-          window.location.href = '/'; // Redirect ke halaman utama setelah berhasil
-          console.log('Campaign created, redirecting to home');
-        } else {
-          alert('Failed to create campaign.');
-          console.log('Failed to create campaign');
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const loadingText = document.getElementById('loading-text');
+        
+        // Disable button dan tampilkan loading
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        loadingText.classList.remove('hidden');
+        
+        try {
+          // Upload gambar campaign
+          const imageFile = document.querySelector('#image-input').files[0];
+          let imageUrl = '';
+          if (imageFile) {
+            console.log('Uploading campaign image...');
+            imageUrl = await uploadImage(imageFile);
+            if (!imageUrl) {
+              throw new Error('Failed to upload campaign image');
+            }
+          }
+          
+          // Upload logo organisasi
+          const logoFile = document.querySelector('#organizationLogo-input').files[0];
+          let organizationLogo = '';
+          if (logoFile) {
+            console.log('Uploading organization logo...');
+            organizationLogo = await uploadImage(logoFile);
+            if (!organizationLogo) {
+              throw new Error('Failed to upload organization logo');
+            }
+          }
+          
+          const formData = {
+            title: document.querySelector('#title-input').value,
+            description: document.querySelector('#description-input').value,
+            imageUrl: imageUrl,
+            targetAmount: Number(document.querySelector('#targetAmount-input').value),
+            currentAmount: Number(document.querySelector('#currentAmount-input').value) || 0,
+            startDate: document.querySelector('#startDate-input').value,
+            endDate: document.querySelector('#endDate-input').value,
+            donorCount: Number(document.querySelector('#donorCount-input').value) || 0,
+            organizationName: document.querySelector('#organizationName-input').value,
+            organizationLogo: organizationLogo,
+            category: document.querySelector('#category-input').value,
+          };
+          
+          console.log('Sending create campaign request with:', formData);
+          const newCampaign = await createCampaign(formData);
+          console.log('Create campaign response:', newCampaign);
+          
+          if (newCampaign) {
+            alert('Campaign created successfully!');
+            window.location.href = '/'; // Redirect ke halaman utama setelah berhasil
+            console.log('Campaign created, redirecting to home');
+          } else {
+            throw new Error('Failed to create campaign');
+          }
+        } catch (error) {
+          console.error('Error:', error.message);
+          alert(`Error: ${error.message}`);
+        } finally {
+          // Reset button
+          submitBtn.disabled = false;
+          submitText.classList.remove('hidden');
+          loadingText.classList.add('hidden');
         }
       });
     } else {
