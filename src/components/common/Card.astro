@@ -91,7 +91,7 @@ const trimmedDescription = description.length > 120 ? `${description.substring(0
     
     <!-- Informasi penggalang dana -->
     <div class="flex items-center mb-4">
-      <img src={organizationLogo} alt={organizationName} class="w-8 h-8 rounded-full mr-2 object-cover" />
+      <img src={organizationLogo ? organizationLogo : "/images/icons/user-default.svg"} alt={organizationName} class="w-8 h-8 rounded-full mr-2 object-cover" />
       <span class="text-sm text-gray-600">Oleh <span class="font-medium">{organizationName}</span></span>
     </div>
     
