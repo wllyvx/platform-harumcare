@@ -10,7 +10,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 //middleware
-
 app.use(cors());
 app.use(express.json());
 
@@ -28,12 +27,13 @@ app.get('/', (req, res) => {
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-// campaign
+// upload routes
+const uploadRoutes = require('./routes/upload');
+app.use('/api/upload', uploadRoutes);
+
+// campaign routes
 const campaignRoutes = require('./routes/campaigns');
 app.use('/api/campaigns', campaignRoutes);
-
-// proteksi POST admin
-app.use('/api/campaigns', authenticateToken, restrictToAdmin, campaignRoutes);
 
 // jalanin server
 app.listen(port, () => {
