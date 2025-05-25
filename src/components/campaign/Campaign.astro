@@ -24,8 +24,8 @@ interface Props {
 }
 
 const {
-  title = "Kampanye Donasi Pilihan",
-  subtitle = "Pilih kampanye yang sesuai dengan kepedulian Anda dan mulai berbagi kebaikan",
+  title = "Program Pilihan",
+  subtitle = "Pilih program yang sesuai dengan kepedulian Anda dan mulai berbagi kebaikan",
   campaigns = [],
   showViewAll = true,
   viewAllLink = "/full-campaigns"
@@ -45,7 +45,7 @@ const campaignsWithDaysLeft = campaigns.map((campaign) => {
 const featuredCampaigns = campaignsWithDaysLeft.slice(0, 6);
 ---
 
-<section class="campaign-section -mt-6 md:-mt-8 relative px-4 py-16 z-10">
+<section class="campaign-section -mt-6 md:-mt-8 relative px-4 py-8 md:py-16 z-10">
   <div class="campaign-container max-w-7xl mx-auto">
     <!-- Header Section -->
     <div class="text-center mb-10 md:mb-16">
@@ -63,9 +63,9 @@ const featuredCampaigns = campaignsWithDaysLeft.slice(0, 6);
             description={campaign.description || 'Tidak ada Deskripsi'}
             imageUrl={campaign.imageUrl}
             targetAmount={campaign.targetAmount}
-            currentAmount={campaign.currentAmount}
+            currentAmount={campaign.currentAmount || 0}
             daysLeft={campaign.daysLeft}
-            donorCount={campaign.donorCount}
+            donorCount={campaign.donorCount || 0}
             organizationName={campaign.organizationName || 'Anonymous'}
             organizationLogo={campaign.organizationLogo}
             category={campaign.category || 'Tidak Berkategori'}
