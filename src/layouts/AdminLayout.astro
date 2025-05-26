@@ -1,5 +1,42 @@
 ---
 import "../styles/global.css";
+
+export interface Props {
+  title?: string;
+}
+
+const { title = "Admin Dashboard" } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+// Helper function to check if current route is active
+const isActive = (path: string) => {
+  if (path === '/admin' && currentPath === '/admin') return true;
+  if (path !== '/admin' && currentPath.startsWith(path)) return true;
+  return false;
+};
+
+const menuItems = [
+  {
+    name: 'Home',
+    href: '/admin/admin',
+    icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'
+  },
+  {
+    name: 'Campaign',
+    href: '/admin/campaigns',
+    icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'
+  },
+  {
+    name: 'User',
+    href: '/admin/users',
+    icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z'
+  },
+  {
+    name: 'Donation',
+    href: '/admin/donation',
+    icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 1118 0z'
+  }
+];
 ---
 
 <html lang="id">
@@ -8,32 +45,151 @@ import "../styles/global.css";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Harum Care Indonesia - Platform donasi terpercaya dan transparan"
+      content="Harum Care Indonesia - Admin Dashboard"
     />
     <link rel="icon" href="/favicon.svg" />
-    <title>Harum Care Indonesia</title>
+    <title>{title} - Harum Care Indonesia</title>
   </head>
-  <body class="flex w-full">
-    <header>
-      <nav class="bg-blue-400">
-        <div class="flex-shrink-0">
-          <a href="/" class="flex items-center">
+  <body class="bg-gray-50">
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0" id="sidebar">
+        <div class="flex items-center justify-center h-16 px-4 bg-blue-600">
+          <div class="flex flex-row gap-4 items-center">
             <img
               src="/images/logo/logo.png"
               alt="Logo Harum Care"
               class="h-8 w-auto mr-2"
             />
-          </a>
-          <ul>
-            <li><a href="">Campaign</a></li>
-            <li><a href="">Donasi</a></li>
-            <li><a href="">User</a></li>
-          </ul>
+            <span class="text-white font-bold text-md">Admin Panel</span>
+          </div>
         </div>
-      </nav>
-    </header>
-    <main class="container">
-      <slot />
-    </main>
+        
+        <nav class="mt-8">
+          <div class="px-4 space-y-2">
+            {menuItems.map((item) => (
+              <a
+                href={item.href}
+                class={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isActive(item.href)
+                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <svg
+                  class={`mr-3 h-5 w-5 ${
+                    isActive(item.href) ? 'text-blue-500' : 'text-gray-500 group-hover:text-gray-700'
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d={item.icon}
+                  />
+                </svg>
+                {item.name}
+              </a>
+            ))}
+          </div>
+        </nav>
+        
+        <!-- Logout Button -->
+        <div class="absolute bottom-0 w-full p-4">
+          <a href="/logout">
+            <button class="group flex items-center w-full px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <svg
+                class="mr-3 h-5 w-5 text-gray-500 group-hover:text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              Logout
+            </button>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
+        <!-- Top Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+          <div class="flex items-center justify-between h-16 px-4">
+            <!-- Mobile menu button -->
+            <div class="flex items-center">
+              <button
+                class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                id="mobile-menu-button"
+              >
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              <h1 class="ml-4 text-2xl font-semibold text-gray-900 lg:ml-0">
+                {title}
+              </h1>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="flex items-center space-x-4">
+              <div class="relative">
+                <button class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span class="text-sm font-medium text-white">A</span>
+                  </div>
+                  <span class="ml-2 text-gray-700 font-medium">Admin</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50">
+          <div class="p-6">
+            <slot />
+          </div>
+        </main>
+      </div>
+    </div>
+    
+    <!-- Mobile menu overlay -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden" id="mobile-overlay"></div>
+    
+    <script>
+      // Mobile menu toggle
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const sidebar = document.getElementById('sidebar');
+      const mobileOverlay = document.getElementById('mobile-overlay');
+      
+      function toggleMobileMenu() {
+        sidebar?.classList.toggle('-translate-x-full');
+        mobileOverlay?.classList.toggle('hidden');
+      }
+      
+      mobileMenuButton?.addEventListener('click', toggleMobileMenu);
+      mobileOverlay?.addEventListener('click', toggleMobileMenu);
+      
+      // Close mobile menu when clicking on a link
+      const sidebarLinks = sidebar?.querySelectorAll('a');
+      sidebarLinks?.forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth < 1024) {
+            toggleMobileMenu();
+          }
+        });
+      });
+    </script>
   </body>
 </html>
