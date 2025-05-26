@@ -1,5 +1,5 @@
 ---
-import PrimaryLayout from "../layouts/PrimaryLayout.astro";
+import AdminLayout from "../layouts/AdminLayout.astro";
 
 // Fungsi create campaign (dibiarkan di frontmatter untuk akses server-side jika diperlukan nanti)
 async function createCampaign(data) {
@@ -25,7 +25,7 @@ async function createCampaign(data) {
 }
 ---
 
-<PrimaryLayout>
+<AdminLayout title="Create Campaign">
   <section id="create-section" class="create-campaign-section max-w-7xl mx-auto px-4 py-16" style="display: none;">
     <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Create New Campaign</h2>
     <form id="create-campaign-form" class="max-w-md mx-auto" enctype="multipart/form-data">
@@ -164,7 +164,7 @@ async function createCampaign(data) {
       </button>
     </form>
   </section>
-</PrimaryLayout>
+</AdminLayout>
 
 <script>
   // Fungsi untuk upload gambar ke server
@@ -320,7 +320,7 @@ async function createCampaign(data) {
           
           if (newCampaign) {
             alert('Campaign created successfully!');
-            window.location.href = '/'; // Redirect ke halaman utama setelah berhasil
+            window.location.href = '/admin/campaigns'; // redirect ke halaman campaign admin setelah berhasil
             console.log('Campaign created, redirecting to home');
           } else {
             throw new Error('Failed to create campaign');

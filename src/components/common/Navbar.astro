@@ -117,7 +117,7 @@
         authNav.innerHTML = `
           <span class="py-4 px-2 text-gray-500">Welcome, ${userRole}</span>
           <a href="/logout" id="logout-link" class="py-2 px-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-300 transition duration-300">Logout</a>
-          ${userRole === "admin" ? '<a href="/create-campaign" class="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-300">Admin Panel</a>' : ""}
+          ${userRole === "admin" ? '<a href="/admin/admin" class="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-300">Admin Panel</a>' : ""}
         `;
       } else {
         authNav.innerHTML = `
@@ -131,7 +131,7 @@
         authNavMobile.innerHTML = `
           <span class="block text-sm px-2 py-2 text-gray-500">Welcome, ${userRole}</span>
           <a href="/logout" id="logout-link-mobile" class="block text-sm px-2 py-2 text-white bg-red-500 font-semibold rounded hover:bg-red-300 transition duration-300">Logout</a>
-          ${userRole === "admin" ? '<a href="/create-campaign" class="block text-sm px-2 py-2 text-white bg-blue-500 font-semibold rounded hover:bg-blue-600 transition duration-300">Admin Panel</a>' : ""}
+          ${userRole === "admin" ? '<a href="/admin/admin" class="block text-sm px-2 py-2 text-white bg-blue-500 font-semibold rounded hover:bg-blue-600 transition duration-300">Admin Panel</a>' : ""}
         `;
       } else {
         authNavMobile.innerHTML = `
