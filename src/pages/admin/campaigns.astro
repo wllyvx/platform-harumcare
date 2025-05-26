@@ -12,9 +12,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro"
       </div>
       <div class="mt-4 sm:mt-0">
         <a href="/create-campaign">
-            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-              + Tambah Campaign
-            </button>
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+            + Tambah Campaign
+          </button>
         </a>
       </div>
     </div>
@@ -39,10 +39,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Semua Kategori</option>
-          <option value="kesehatan">Kesehatan</option>
-          <option value="pendidikan">Pendidikan</option>
-          <option value="bencana">Bencana Alam</option>
-          <option value="sosial">Sosial</option>
+          <!-- Categories will be populated dynamically -->
         </select>
       </div>
       <div>
@@ -173,6 +170,41 @@ import AdminLayout from "../../layouts/AdminLayout.astro"
     }).format(amount);
   }
 
+  function populateCategories() {
+    // Get unique categories from campaigns data
+    const categories = [...new Set(campaigns.map(campaign => campaign.category))];
+    
+    // Sort categories alphabetically
+    categories.sort();
+    
+    // Get the category filter select element
+    const categorySelect = document.getElementById('categoryFilter');
+    if (!categorySelect) return;
+    
+    // Clear existing options (except the first "Semua Kategori" option)
+    const defaultOption = categorySelect.querySelector('option[value=""]');
+    categorySelect.innerHTML = '';
+    if (defaultOption) {
+      categorySelect.appendChild(defaultOption);
+    } else {
+      const allOption = document.createElement('option');
+      allOption.value = '';
+      allOption.textContent = 'Semua Kategori';
+      categorySelect.appendChild(allOption);
+    }
+    
+    // Add category options
+    categories.forEach(category => {
+      if (category && category.trim() !== '') {
+        const option = document.createElement('option');
+        option.value = category;
+        // Capitalize first letter for display
+        option.textContent = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+        categorySelect.appendChild(option);
+      }
+    });
+  }
+
   function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('id-ID', {
       year: 'numeric',
@@ -211,6 +243,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro"
       const data = await response.json();
       campaigns = data;
       filteredCampaigns = [...campaigns];
+      
+      // Populate category dropdown with unique categories from data
+      populateCategories();
       
       showTable();
       renderTable();
