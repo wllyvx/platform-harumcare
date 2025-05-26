@@ -17,7 +17,7 @@ mongoose.connection.once('open', () => {
   console.log('GridFS initialized');
 });
 
-// Multer config untuk memory storage (file disimpan di memory, bukan disk)
+// Multer config untuk memory storage
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -29,7 +29,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({ 
-  storage: storage,  // PENTING: ini menyimpan di memory, bukan disk
+  storage: storage,
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024 // Maksimal 5MB
@@ -67,8 +67,6 @@ router.post('/', authenticateToken, upload.single('image'), (req, res) => {
 
     // Handle success
     uploadStream.on('finish', () => {
-      
-      // Return full URL untuk akses gambar
       const imageUrl = `http://localhost:3000/api/upload/image/${uploadStream.id}`;
       
       res.json({ 
@@ -105,12 +103,10 @@ router.get('/image/:id', (req, res) => {
     });
 
     downloadStream.on('file', (file) => {
-      // Set proper content type
       res.set('Content-Type', file.metadata?.contentType || 'image/jpeg');
-      res.set('Cache-Control', 'public, max-age=31536000'); // Cache 1 tahun
+      res.set('Cache-Control', 'public, max-age=31536000');
     });
 
-    // Stream file langsung ke response
     downloadStream.pipe(res);
 
   } catch (error) {
