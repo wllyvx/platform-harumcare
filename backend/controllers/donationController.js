@@ -191,3 +191,33 @@ exports.getDonationByTransactionId = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+//get all donations
+exports.getAllDonations = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, paymentMethod } = req.query;
+    
+    let filter = {};
+    if (status) filter.paymentStatus = status;
+    if (paymentMethod) filter.paymentMethod = paymentMethod;
+    
+    const donations = await Donation.find(filter)
+      .populate('campaignId', 'title imageUrl')
+      .populate('userId', 'nama email')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Donation.countDocuments(filter);
+    
+    res.json({
+      donations,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total
+    });
+  } catch (err) {
+    console.error('Error getting all donations:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

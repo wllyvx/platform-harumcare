@@ -1,28 +1,5 @@
 ---
-import AdminLayout from "../layouts/AdminLayout.astro";
-
-// Fungsi create campaign (dibiarkan di frontmatter untuk akses server-side jika diperlukan nanti)
-async function createCampaign(data) {
-  try {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const response = await fetch('http://localhost:3000/api/campaigns', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to create campaign');
-    }
-    const newCampaign = await response.json();
-    return newCampaign;
-  } catch (error) {
-    console.error('Error creating campaign:', error.message);
-    return null;
-  }
-}
+import AdminLayout from "../../../layouts/AdminLayout.astro"
 ---
 
 <AdminLayout title="Create Campaign">
@@ -75,15 +52,6 @@ async function createCampaign(data) {
         />
       </div>
       <div class="mb-6">
-        <label for="currentAmount-input" class="block text-gray-600 mb-2">Current Amount</label>
-        <input
-          type="number"
-          name="currentAmount"
-          id="currentAmount-input"
-          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
         <label for="startDate-input" class="block text-gray-600 mb-2">Start Date</label>
         <input
           type="date"
@@ -100,15 +68,6 @@ async function createCampaign(data) {
           name="endDate"
           required
           id="endDate-input"
-          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
-        <label for="donorCount-input" class="block text-gray-600 mb-2">Donor Count</label>
-        <input
-          type="number"
-          name="donorCount"
-          id="donorCount-input"
           class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
         />
       </div>
@@ -305,10 +264,10 @@ async function createCampaign(data) {
             description: document.querySelector('#description-input').value,
             imageUrl: imageUrl,
             targetAmount: Number(document.querySelector('#targetAmount-input').value),
-            currentAmount: Number(document.querySelector('#currentAmount-input').value) || 0,
+            currentAmount: 0,
             startDate: document.querySelector('#startDate-input').value,
             endDate: document.querySelector('#endDate-input').value,
-            donorCount: Number(document.querySelector('#donorCount-input').value) || 0,
+            donorCount: 0,
             organizationName: document.querySelector('#organizationName-input').value,
             organizationLogo: organizationLogo,
             category: document.querySelector('#category-input').value,
@@ -320,7 +279,7 @@ async function createCampaign(data) {
           
           if (newCampaign) {
             alert('Campaign created successfully!');
-            window.location.href = '/admin/campaigns'; // redirect ke halaman campaign admin setelah berhasil
+            window.location.href = '/admin/campaign'; // redirect ke halaman campaign admin setelah berhasil
             console.log('Campaign created, redirecting to home');
           } else {
             throw new Error('Failed to create campaign');

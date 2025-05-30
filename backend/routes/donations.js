@@ -15,6 +15,9 @@ router.get('/my-donations', authenticateToken, donationController.getUserDonatio
 // Get donation by transaction ID (user/admin)
 router.get('/transaction/:transactionId', authenticateToken, donationController.getDonationByTransactionId);
 
+// Get all donations (admin only)
+router.get('/', authenticateToken, donationController.getAllDonations);
+
 // Update payment status (for payment gateway webhook)
 router.put('/payment-status', donationController.updatePaymentStatus);
 

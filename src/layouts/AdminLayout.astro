@@ -51,7 +51,43 @@ const menuItems = [
     <title>{title} - Harum Care Indonesia</title>
   </head>
   <body class="bg-gray-50">
-    <div class="flex h-screen">
+    <!-- Authentication Loading Screen -->
+    <div id="authLoading" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Memverifikasi akses...</p>
+      </div>
+    </div>
+
+    <!-- Unauthorized Access Screen -->
+    <div id="authError" class="fixed inset-0 bg-white z-50 flex items-center justify-center hidden">
+      <div class="text-center max-w-md mx-auto p-6">
+        <div class="text-red-500 mb-4">
+          <svg class="h-16 w-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h2>
+        <p class="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin atau sesi telah berakhir.</p>
+        <div class="space-y-3">
+          <button
+            id="loginRedirect"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+          >
+            Login sebagai Admin
+          </button>
+          <button
+            id="homeRedirect"
+            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+          >
+            Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Admin Interface -->
+    <div id="adminInterface" class="flex h-screen hidden">
       <!-- Sidebar -->
       <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0" id="sidebar">
         <div class="flex items-center justify-center h-16 px-4 bg-blue-600">
@@ -101,24 +137,25 @@ const menuItems = [
         
         <!-- Logout Button -->
         <div class="absolute bottom-0 w-full p-4">
-          <a href="/logout">
-            <button class="group flex items-center w-full px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-              <svg
-                class="mr-3 h-5 w-5 text-gray-500 group-hover:text-gray-700"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Logout
-            </button>
-          </a>
+          <button 
+            id="logoutBtn"
+            class="group flex items-center w-full px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          >
+            <svg
+              class="mr-3 h-5 w-5 text-gray-500 group-hover:text-gray-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Logout
+          </button>
         </div>
       </div>
       
@@ -150,7 +187,7 @@ const menuItems = [
                   <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
                     <span class="text-sm font-medium text-white">A</span>
                   </div>
-                  <span class="ml-2 text-gray-700 font-medium">Admin</span>
+                  <span class="ml-2 text-gray-700 font-medium" id="adminName">Admin</span>
                 </button>
               </div>
             </div>
@@ -170,28 +207,171 @@ const menuItems = [
     <div class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden" id="mobile-overlay"></div>
     
     <script>
-      // Mobile menu toggle
-      const mobileMenuButton = document.getElementById('mobile-menu-button');
-      const sidebar = document.getElementById('sidebar');
-      const mobileOverlay = document.getElementById('mobile-overlay');
-      
-      function toggleMobileMenu() {
-        sidebar?.classList.toggle('-translate-x-full');
-        mobileOverlay?.classList.toggle('hidden');
+      // Authentication Guard
+      class AdminAuthGuard {
+        constructor() {
+          this.token = null;
+          this.role = null;
+          this.userName = null;
+          this.init();
+        }
+
+        init() {
+          // Check authentication immediately
+          this.checkAuthentication();
+        }
+
+        checkAuthentication() {
+          try {
+            // Get authentication data from localStorage
+            this.token = localStorage.getItem('token');
+            this.role = localStorage.getItem('role');
+            this.userName = localStorage.getItem('userName') || localStorage.getItem('name');
+
+            console.log('Auth check:', { 
+              hasToken: !!this.token, 
+              role: this.role, 
+              userName: this.userName 
+            });
+
+            // Validate authentication
+            if (!this.token || this.role !== 'admin') {
+              this.showAuthError();
+              return false;
+            }
+
+            // Verify token is not expired (basic check)
+            if (this.isTokenExpired()) {
+              console.log('Token expired');
+              this.clearAuth();
+              this.showAuthError();
+              return false;
+            }
+
+            // Authentication successful
+            this.showAdminInterface();
+            return true;
+
+          } catch (error) {
+            console.error('Authentication error:', error);
+            this.showAuthError();
+            return false;
+          }
+        }
+
+        isTokenExpired() {
+          if (!this.token) return true;
+          
+          try {
+            // Basic JWT expiration check
+            const payload = JSON.parse(atob(this.token.split('.')[1]));
+            const currentTime = Math.floor(Date.now() / 1000);
+            return payload.exp && payload.exp < currentTime;
+          } catch (error) {
+            console.error('Token validation error:', error);
+            return true;
+          }
+        }
+
+        clearAuth() {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('name');
+          localStorage.removeItem('userId');
+        }
+
+        showAuthError() {
+          document.getElementById('authLoading')?.classList.add('hidden');
+          document.getElementById('authError')?.classList.remove('hidden');
+          document.getElementById('adminInterface')?.classList.add('hidden');
+        }
+
+        showAdminInterface() {
+          document.getElementById('authLoading')?.classList.add('hidden');
+          document.getElementById('authError')?.classList.add('hidden');
+          document.getElementById('adminInterface')?.classList.remove('hidden');
+          
+          // Update admin name in header
+          const adminNameEl = document.getElementById('adminName');
+          if (adminNameEl && this.userName) {
+            adminNameEl.textContent = this.userName;
+          }
+        }
+
+        logout() {
+          this.clearAuth();
+          window.location.href = '/login';
+        }
+
+        redirectToLogin() {
+          window.location.href = '/login';
+        }
+
+        redirectToHome() {
+          window.location.href = '/';
+        }
       }
-      
-      mobileMenuButton?.addEventListener('click', toggleMobileMenu);
-      mobileOverlay?.addEventListener('click', toggleMobileMenu);
-      
-      // Close mobile menu when clicking on a link
-      const sidebarLinks = sidebar?.querySelectorAll('a');
-      sidebarLinks?.forEach(link => {
-        link.addEventListener('click', () => {
-          if (window.innerWidth < 1024) {
-            toggleMobileMenu();
+
+      // Initialize authentication guard when DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        const authGuard = new AdminAuthGuard();
+
+        // Setup event listeners
+        document.getElementById('loginRedirect')?.addEventListener('click', () => {
+          authGuard.redirectToLogin();
+        });
+
+        document.getElementById('homeRedirect')?.addEventListener('click', () => {
+          authGuard.redirectToHome();
+        });
+
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+          if (confirm('Apakah Anda yakin ingin logout?')) {
+            authGuard.logout();
           }
         });
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        function toggleMobileMenu() {
+          sidebar?.classList.toggle('-translate-x-full');
+          mobileOverlay?.classList.toggle('hidden');
+        }
+        
+        mobileMenuButton?.addEventListener('click', toggleMobileMenu);
+        mobileOverlay?.addEventListener('click', toggleMobileMenu);
+        
+        // Close mobile menu when clicking on a link
+        const sidebarLinks = sidebar?.querySelectorAll('a');
+        sidebarLinks?.forEach(link => {
+          link.addEventListener('click', () => {
+            if (window.innerWidth < 1024) {
+              toggleMobileMenu();
+            }
+          });
+        });
+
+        // Listen for storage changes (e.g., logout from another tab)
+        window.addEventListener('storage', (e) => {
+          if (e.key === 'token' || e.key === 'role') {
+            if (!e.newValue || (e.key === 'role' && e.newValue !== 'admin')) {
+              authGuard.showAuthError();
+            }
+          }
+        });
+
+        // Periodic authentication check (every 5 minutes)
+        setInterval(() => {
+          authGuard.checkAuthentication();
+        }, 5 * 60 * 1000);
       });
+
+      // Make auth guard globally available for other scripts
+      window.AdminAuthGuard = AdminAuthGuard;
     </script>
   </body>
 </html>
