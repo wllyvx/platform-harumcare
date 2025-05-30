@@ -237,7 +237,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
       }
       
       const data = await response.json();
-      campaigns = data;
+      campaigns = data.campaigns || [];
       filteredCampaigns = [...campaigns];
       
       // Populate category dropdown with unique categories from data
