@@ -1,35 +1,37 @@
 ---
 import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
-import type { ObjectId } from 'mongoose';
-
+import type { ObjectId } from "mongoose";
 
 // Ekspor getStaticPaths
 export async function getStaticPaths() {
-  console.log('Starting getStaticPaths execution...');
-  
+  console.log("Starting getStaticPaths execution...");
+
   try {
-    console.log('Attempting to fetch campaign list from http://localhost:3000/api/campaigns...');
-    const response = await fetch('http://localhost:3000/api/campaigns');
-    
+    console.log(
+      "Attempting to fetch campaign list from http://localhost:3000/api/campaigns..."
+    );
+    const response = await fetch("http://localhost:3000/api/campaigns");
+
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}, ${response.statusText}`);
+      throw new Error(
+        `HTTP error! Status: ${response.status}, ${response.statusText}`
+      );
     }
-    
+
     const data = await response.json();
     const campaigns = data.campaigns;
-    
+
     if (!campaigns || campaigns.length === 0) {
-      console.warn('No campaigns found, returning empty paths array');
+      console.warn("No campaigns found, returning empty paths array");
       return [];
     }
-    
+
     return campaigns.map((campaign) => ({
       params: { id: campaign._id.toString() },
       props: { campaign },
     }));
-    
   } catch (error) {
-    console.error('Failed to fetch campaign list:', error.message);
+    console.error("Failed to fetch campaign list:", error.message);
     return [];
   }
 }
@@ -56,25 +58,25 @@ const { campaign } = Astro.props;
 // Jika campaign tidak ditemukan dari props, redirect ke halaman 404
 if (!campaign) {
   console.warn(`Campaign not found in props, redirecting to /404...`);
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
 
 // Fungsi helper untuk parsing tanggal yang aman
 const parseDate = (dateString) => {
   if (!dateString) return null;
-  
+
   // Coba berbagai format tanggal
   const date = new Date(dateString);
   if (!isNaN(date.getTime())) {
     return date;
   }
-  
+
   // Jika format ISO tidak bekerja, coba format lain
-  const isoDate = new Date(dateString.replace(/\//g, '-'));
+  const isoDate = new Date(dateString.replace(/\//g, "-"));
   if (!isNaN(isoDate.getTime())) {
     return isoDate;
   }
-  
+
   return null;
 };
 
@@ -87,20 +89,23 @@ if (endDate) {
   const timeDiff = endDate.getTime() - today.getTime();
   daysLeft = Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
 } else {
-  console.warn('Invalid end date:', campaign.endDate);
+  console.warn("Invalid end date:", campaign.endDate);
 }
 
 // Persentase donasi terkumpul dengan validasi
 const currentAmount = campaign.currentAmount || 0;
 const targetAmount = campaign.targetAmount || 1;
-const percentageFunded = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+const percentageFunded = Math.min(
+  Math.round((currentAmount / targetAmount) * 100),
+  100
+);
 
 // Format mata uang ke Rupiah
 const formatCurrency = (amount) => {
   const numAmount = Number(amount) || 0;
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(numAmount);
@@ -110,31 +115,41 @@ const formatCurrency = (amount) => {
 const formatDate = (dateString) => {
   const date = parseDate(dateString);
   if (!date) {
-    return 'Tanggal tidak valid';
+    return "Tanggal tidak valid";
   }
-  
-  return new Intl.DateTimeFormat('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   }).format(date);
 };
 ---
 
 <PrimaryLayout>
   <section class="w-full relative max-w-6xl mx-auto">
-    <div class="w-full h-[300px] md:h-[400px] lg:h-[500px] bg-gray-300 relative overflow-hidden">
+    <div
+      class="w-full h-[300px] md:h-[400px] lg:h-[500px] bg-gray-300 relative overflow-hidden"
+    >
       <img
         src={campaign.imageUrl}
         alt={campaign.title}
         class="w-full h-full object-cover"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end"
+      >
         <div class="container mx-auto px-4 pb-8 md:pb-16">
-          <span class="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full mb-4">
+          <span
+            class="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full mb-4"
+          >
             {campaign.category}
           </span>
-          <h1 class="text-white text-2xl md:text-4xl lg:text-5xl font-bold max-w-4xl">{campaign.title}</h1>
+          <h1
+            class="text-white text-2xl md:text-4xl lg:text-5xl font-bold max-w-4xl"
+          >
+            {campaign.title}
+          </h1>
         </div>
       </div>
     </div>
@@ -145,13 +160,25 @@ const formatDate = (dateString) => {
       <div class="lg:w-2/3 px-2">
         <div class="mb-6 flex flex-col gap-4">
           <div class="flex gap-2 md:gap-4">
-            <p class="text-gray-600"><strong>Tanggal Mulai:</strong> {formatDate(campaign.startDate)}</p>
-            <p class="text-gray-600"><strong>Tanggal Berakhir:</strong> {formatDate(campaign.endDate)}</p>
+            <p class="text-gray-600">
+              <strong>Tanggal Mulai:</strong>
+              {formatDate(campaign.startDate)}
+            </p>
+            <p class="text-gray-600">
+              <strong>Tanggal Berakhir:</strong>
+              {formatDate(campaign.endDate)}
+            </p>
           </div>
           <div class="flex items-center gap-2 bg-gray-200 rounded py-4 px-2">
-            <img src={campaign.organizationLogo ? campaign.organizationLogo : "/images/icons/user-default.svg"} alt="Profil Organisasi" class="h-10 w-auto">
+            <img
+              src={campaign.organizationLogo
+                ? campaign.organizationLogo
+                : "/images/icons/user-default.svg"}
+              alt="Profil Organisasi"
+              class="h-10 w-auto"
+            />
             <p class="text-gray-600">{campaign.organizationName}</p>
-          </div> 
+          </div>
         </div>
         <h2 class="text-2xl font-bold mb-4">Deskripsi Kampanye</h2>
         <p class="text-gray-600 mb-6">{campaign.description}</p>
@@ -159,15 +186,25 @@ const formatDate = (dateString) => {
 
       <!-- Sticky Donation Card -->
       <div class="lg:w-1/3">
-        <div class="sticky top-8 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+        <div
+          class="sticky top-8 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100"
+        >
           <div class="p-6">
             <div class="mb-4">
               <div class="flex justify-between text-sm mb-2">
-                <span class="font-semibold text-blue-600">{formatCurrency(campaign.currentAmount)}</span>
-                <span class="text-gray-500">dari {formatCurrency(campaign.targetAmount)}</span>
+                <span class="font-semibold text-blue-600"
+                  >{formatCurrency(campaign.currentAmount)}</span
+                >
+                <span class="text-gray-500"
+                  >dari {formatCurrency(campaign.targetAmount)}</span
+                >
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="bg-blue-600 h-2.5 rounded-full" style={`width: ${percentageFunded}%`}></div>
+                <div
+                  class="bg-blue-600 h-2.5 rounded-full"
+                  style={`width: ${percentageFunded}%`}
+                >
+                </div>
               </div>
             </div>
             <div class="grid grid-cols-3 gap-2 mb-6 text-center">
@@ -177,7 +214,9 @@ const formatDate = (dateString) => {
               </div>
               <div class="bg-gray-50 p-2 rounded">
                 <p class="text-xs text-gray-500">Donatur</p>
-                <p class="font-semibold text-gray-800">{campaign.donorCount || 0}</p>
+                <p class="font-semibold text-gray-800">
+                  {campaign.donorCount || 0}
+                </p>
               </div>
               <div class="bg-gray-50 p-2 rounded">
                 <p class="text-xs text-gray-500">Sisa Hari</p>
@@ -186,26 +225,12 @@ const formatDate = (dateString) => {
             </div>
 
             <!-- Donation Form -->
-            <form id="donate-form" class="space-y-4" data-campaign-id={campaign._id}>
-              <div>
-                <label for="donation-amount" class="block text-sm font-medium text-gray-700">Jumlah Donasi</label>
-                <input
-                  type="number"
-                  id="donation-amount"
-                  name="donation-amount"
-                  min="1000"
-                  step="1000"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
-              >
-                Donasi Sekarang
-              </button>
-            </form>
+            <a
+              href={`/donate/${campaign._id}`}
+              class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 text-center block"
+            >
+              Donasi Sekarang
+            </a>
           </div>
         </div>
       </div>
@@ -216,67 +241,70 @@ const formatDate = (dateString) => {
 <script>
   // Fungsi untuk donasi - dipindahkan ke client-side script
   async function donate(amount, campaignId) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      alert('Please login to donate.');
+      alert("Please login to donate.");
       return null;
     }
-    
+
     try {
-      const response = await fetch(`http://localhost:3000/api/campaigns/${campaignId}/donate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ amount }),
-      });
-      
+      const response = await fetch(
+        `http://localhost:3000/api/campaigns/${campaignId}/donate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ amount }),
+        }
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to process donation');
+        throw new Error("Failed to process donation");
       }
-      
+
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Error donating:', error.message);
+      console.error("Error donating:", error.message);
       return null;
     }
   }
 
-  window.addEventListener('load', () => {
-    const donateForm = document.querySelector('#donate-form');
+  window.addEventListener("load", () => {
+    const donateForm = document.querySelector("#donate-form");
     if (donateForm) {
-      console.log('Donate form found, adding event listener...');
-      donateForm.addEventListener('submit', async (event) => {
+      console.log("Donate form found, adding event listener...");
+      donateForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-        
-        const amountInput = document.querySelector('#donation-amount');
+
+        const amountInput = document.querySelector("#donation-amount");
         const amount = Number(amountInput.value);
-        const campaignId = donateForm.getAttribute('data-campaign-id');
-        
+        const campaignId = donateForm.getAttribute("data-campaign-id");
+
         if (amount < 1000) {
-          alert('Minimum donation is IDR 1,000.');
+          alert("Minimum donation is IDR 1,000.");
           return;
         }
-        
+
         if (!campaignId) {
-          alert('Campaign ID not found.');
+          alert("Campaign ID not found.");
           return;
         }
-        
+
         const result = await donate(amount, campaignId);
-        console.log('Donation response:', result);
-        
+        console.log("Donation response:", result);
+
         if (result) {
-          alert('Donation successful! Thank you!');
+          alert("Donation successful! Thank you!");
           window.location.reload();
         } else {
-          alert('Failed to process donation. Please try again.');
+          alert("Failed to process donation. Please try again.");
         }
       });
     } else {
-      console.error('Donate form not found in DOM');
+      console.error("Donate form not found in DOM");
     }
   });
 </script>

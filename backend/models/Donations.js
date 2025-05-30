@@ -70,23 +70,26 @@ donationSchema.pre('save', function(next) {
 
 donationSchema.pre('save', async function(next) {
   if (this.isModified('paymentStatus')) {
-    const Campaign = mongoose.model('Campaign');
-    const oldStatus = this.paymentStatus || 'pending'; // Ambil status lama
-    const newStatus = this.get('paymentStatus');
 
-    if (newStatus === 'completed' && oldStatus !== 'completed') {
-      await Campaign.findByIdAndUpdate(this.campaignId, {
-        $inc: {
-          currentAmount: this.amount,
-          donorCount: 1,
-        },
+    const Campaign = mongoose.model("Campaign");
+    const oldStatus = this.paymentStatus || "pending";
+    const newStatus = this.get("paymentStatus");
+
+    if (newStatus === "completed" && oldStatus !== "completed") {
+      console.log("Updating Campaign - Incrementing currentAmount and donorCount:", {
+        campaignId: this.campaignId,
+        amount: this.amount,
       });
-    } else if (oldStatus === 'completed' && newStatus === 'failed') {
       await Campaign.findByIdAndUpdate(this.campaignId, {
-        $inc: {
-          currentAmount: -this.amount,
-          donorCount: -1,
-        },
+        $inc: { currentAmount: this.amount, donorCount: 1 },
+      });
+    } else if (oldStatus === "completed" && newStatus === "failed") {
+      console.log("Updating Campaign - Decrementing currentAmount and donorCount:", {
+        campaignId: this.campaignId,
+        amount: this.amount,
+      });
+      await Campaign.findByIdAndUpdate(this.campaignId, {
+        $inc: { currentAmount: -this.amount, donorCount: -1 },
       });
     }
   }

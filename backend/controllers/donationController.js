@@ -3,10 +3,10 @@ const Campaign = require("../models/Campaign");
 const User = require("../models/Users");
 
 // Create donation
+// Create donation
 exports.createDonation = async (req, res) => {
   try {
-    const { campaignId, amount, message, paymentMethod, isAnonymous } =
-      req.body;
+    const { campaignId, amount, message, paymentMethod, isAnonymous } = req.body;
     const userId = req.user.userId;
 
     // Validasi input
@@ -36,7 +36,7 @@ exports.createDonation = async (req, res) => {
       return res.status(404).json({ error: "User tidak ditemukan" });
     }
 
-    // Create donation
+    // Create donation with pending status
     const donation = new Donation({
       campaignId,
       userId,
@@ -45,21 +45,13 @@ exports.createDonation = async (req, res) => {
       paymentMethod,
       donorName: isAnonymous ? "Anonim" : user.nama,
       isAnonymous,
+      paymentStatus: "pending", // Pastikan status awal adalah pending
     });
 
     await donation.save();
 
-    if (donation.paymentStatus === "completed") {
-      await Campaign.findByIdAndUpdate(donation.campaignId, {
-        $inc: {
-          currentAmount: donation.amount,
-          donorCount: 1,
-        },
-      });
-    }
-
     res.status(201).json({
-      message: "Donasi berhasil dibuat",
+      message: "Donasi telah dikirim dan menunggu approval dari admin",
       donation: {
         _id: donation._id,
         transactionId: donation.transactionId,
@@ -73,7 +65,6 @@ exports.createDonation = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
 // Get donations by campaign
 exports.getDonationsByCampaign = async (req, res) => {
   try {
@@ -222,7 +213,6 @@ exports.getAllDonations = async (req, res) => {
 // Update donation status (admin only)
 exports.updateDonationStatus = async (req, res) => {
   try {
-    // Check if user is admin
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -230,7 +220,6 @@ exports.updateDonationStatus = async (req, res) => {
     const { id } = req.params;
     const { paymentStatus } = req.body;
 
-    // Validate status
     if (!["completed", "failed", "pending"].includes(paymentStatus)) {
       return res.status(400).json({ message: "Invalid payment status" });
     }
@@ -240,15 +229,37 @@ exports.updateDonationStatus = async (req, res) => {
       return res.status(404).json({ message: "Donation not found" });
     }
 
-    // Update donation
+    const oldStatus = donation.paymentStatus;
     donation.paymentStatus = paymentStatus;
     if (paymentStatus === "completed") {
       donation.completedAt = new Date();
     }
 
-    const oldStatus = donation.paymentStatus;
-
     await donation.save();
+
+    // Tambahkan logika pembaruan Campaign secara eksplisit
+    if (paymentStatus === "completed" && oldStatus !== "completed") {
+      console.log("Updating Campaign - Incrementing currentAmount and donorCount:", {
+        campaignId: donation.campaignId,
+        amount: donation.amount,
+      });
+      await Campaign.findByIdAndUpdate(donation.campaignId, {
+        $inc: { currentAmount: donation.amount, donorCount: 1 },
+      }, { new: true }); // { new: true } untuk mengembalikan dokumen yang diperbarui
+    } else if (oldStatus === "completed" && paymentStatus === "failed") {
+      console.log("Updating Campaign - Decrementing currentAmount and donorCount:", {
+        campaignId: donation.campaignId,
+        amount: donation.amount,
+      });
+      await Campaign.findByIdAndUpdate(donation.campaignId, {
+        $inc: { currentAmount: -donation.amount, donorCount: -1 },
+      }, { new: true });
+    }
+
+    console.log("After update - Donation:", {
+      id: donation._id,
+      updatedStatus: donation.paymentStatus,
+    });
 
     res.json({
       message: "Donation status updated successfully",

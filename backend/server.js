@@ -72,11 +72,11 @@ app.use((req, res) => {
 // jalanin server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-  console.log('Available routes:');
-  console.log('- GET  /api/campaigns');
-  console.log('- POST /api/campaigns (admin only)');
-  console.log('- POST /api/auth/register');
-  console.log('- POST /api/auth/login');
-  console.log('- POST /api/donations (user only)');
-  console.log('- POST /api/upload (authenticated)');
+  // console.log('Available routes:');
+  // console.log('- GET  /api/campaigns');
+  // console.log('- POST /api/campaigns (admin only)');
+  // console.log('- POST /api/auth/register');
+  // console.log('- POST /api/auth/login');
+  // console.log('- POST /api/donations (user only)');
+  // console.log('- POST /api/upload (authenticated)');
 });
