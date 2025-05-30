@@ -1,38 +1,41 @@
-const Donation = require('../models/Donations');
-const Campaign = require('../models/Campaign');
-const User = require('../models/Users');
+const Donation = require("../models/Donations");
+const Campaign = require("../models/Campaign");
+const User = require("../models/Users");
 
 // Create donation
 exports.createDonation = async (req, res) => {
   try {
-    const { campaignId, amount, message, paymentMethod, isAnonymous } = req.body;
+    const { campaignId, amount, message, paymentMethod, isAnonymous } =
+      req.body;
     const userId = req.user.userId;
-    
+
     // Validasi input
     if (!campaignId || !amount || !paymentMethod) {
-      return res.status(400).json({ error: 'Campaign ID, amount, dan payment method wajib diisi' });
+      return res
+        .status(400)
+        .json({ error: "Campaign ID, amount, dan payment method wajib diisi" });
     }
-    
+
     if (amount < 1000) {
-      return res.status(400).json({ error: 'Minimal donasi Rp 1.000' });
+      return res.status(400).json({ error: "Minimal donasi Rp 1.000" });
     }
-    
+
     // Check if campaign exists and still active
     const campaign = await Campaign.findById(campaignId);
     if (!campaign) {
-      return res.status(404).json({ error: 'Campaign tidak ditemukan' });
+      return res.status(404).json({ error: "Campaign tidak ditemukan" });
     }
-    
+
     if (new Date() > campaign.endDate) {
-      return res.status(400).json({ error: 'Campaign sudah berakhir' });
+      return res.status(400).json({ error: "Campaign sudah berakhir" });
     }
-    
+
     // Get user info
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User tidak ditemukan' });
+      return res.status(404).json({ error: "User tidak ditemukan" });
     }
-    
+
     // Create donation
     const donation = new Donation({
       campaignId,
@@ -40,25 +43,34 @@ exports.createDonation = async (req, res) => {
       amount,
       message,
       paymentMethod,
-      donorName: isAnonymous ? 'Anonim' : user.nama,
-      isAnonymous
+      donorName: isAnonymous ? "Anonim" : user.nama,
+      isAnonymous,
     });
-    
+
     await donation.save();
-    
+
+    if (donation.paymentStatus === "completed") {
+      await Campaign.findByIdAndUpdate(donation.campaignId, {
+        $inc: {
+          currentAmount: donation.amount,
+          donorCount: 1,
+        },
+      });
+    }
+
     res.status(201).json({
-      message: 'Donasi berhasil dibuat',
+      message: "Donasi berhasil dibuat",
       donation: {
         _id: donation._id,
         transactionId: donation.transactionId,
         amount: donation.amount,
         paymentStatus: donation.paymentStatus,
-        paymentMethod: donation.paymentMethod
-      }
+        paymentMethod: donation.paymentMethod,
+      },
     });
   } catch (err) {
-    console.error('Error creating donation:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error creating donation:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -67,37 +79,37 @@ exports.getDonationsByCampaign = async (req, res) => {
   try {
     const { campaignId } = req.params;
     const { page = 1, limit = 10 } = req.query;
-    
-    const donations = await Donation.find({ 
-      campaignId, 
-      paymentStatus: 'completed' 
+
+    const donations = await Donation.find({
+      campaignId,
+      paymentStatus: "completed",
     })
-    .populate('userId', 'nama')
-    .sort({ completedAt: -1 })
-    .limit(limit * 1)
-    .skip((page - 1) * limit);
-    
-    const total = await Donation.countDocuments({ 
-      campaignId, 
-      paymentStatus: 'completed' 
+      .populate("userId", "nama")
+      .sort({ completedAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Donation.countDocuments({
+      campaignId,
+      paymentStatus: "completed",
     });
-    
+
     res.json({
-      donations: donations.map(donation => ({
+      donations: donations.map((donation) => ({
         _id: donation._id,
         amount: donation.amount,
         message: donation.message,
         donorName: donation.donorName,
         isAnonymous: donation.isAnonymous,
-        completedAt: donation.completedAt
+        completedAt: donation.completedAt,
       })),
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
   } catch (err) {
-    console.error('Error getting donations:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error getting donations:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -106,24 +118,24 @@ exports.getUserDonations = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { page = 1, limit = 10 } = req.query;
-    
+
     const donations = await Donation.find({ userId })
-    .populate('campaignId', 'title imageUrl')
-    .sort({ createdAt: -1 })
-    .limit(limit * 1)
-    .skip((page - 1) * limit);
-    
+      .populate("campaignId", "title imageUrl")
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
     const total = await Donation.countDocuments({ userId });
-    
+
     res.json({
       donations,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
   } catch (err) {
-    console.error('Error getting user donations:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error getting user donations:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -131,39 +143,21 @@ exports.getUserDonations = async (req, res) => {
 exports.updatePaymentStatus = async (req, res) => {
   try {
     const { transactionId, status } = req.body;
-    
+
     const donation = await Donation.findOne({ transactionId });
     if (!donation) {
-      return res.status(404).json({ error: 'Donasi tidak ditemukan' });
+      return res.status(404).json({ error: "Donasi tidak ditemukan" });
     }
-    
+
     const oldStatus = donation.paymentStatus;
     donation.paymentStatus = status;
-    
-    if (status === 'completed' && oldStatus !== 'completed') {
-      // Update campaign currentAmount and donorCount
-      await Campaign.findByIdAndUpdate(donation.campaignId, {
-        $inc: { 
-          currentAmount: donation.amount,
-          donorCount: 1 
-        }
-      });
-    } else if (oldStatus === 'completed' && status === 'failed') {
-      // Rollback campaign amounts
-      await Campaign.findByIdAndUpdate(donation.campaignId, {
-        $inc: { 
-          currentAmount: -donation.amount,
-          donorCount: -1 
-        }
-      });
-    }
-    
+
     await donation.save();
-    
-    res.json({ message: 'Status pembayaran berhasil diupdate' });
+
+    res.json({ message: "Status pembayaran berhasil diupdate" });
   } catch (err) {
-    console.error('Error updating payment status:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error updating payment status:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -171,24 +165,27 @@ exports.updatePaymentStatus = async (req, res) => {
 exports.getDonationByTransactionId = async (req, res) => {
   try {
     const { transactionId } = req.params;
-    
+
     const donation = await Donation.findOne({ transactionId })
-    .populate('campaignId', 'title')
-    .populate('userId', 'nama email');
-    
+      .populate("campaignId", "title")
+      .populate("userId", "nama email");
+
     if (!donation) {
-      return res.status(404).json({ error: 'Donasi tidak ditemukan' });
+      return res.status(404).json({ error: "Donasi tidak ditemukan" });
     }
-    
+
     // Check if user owns this donation or is admin
-    if (donation.userId._id.toString() !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Akses ditolak' });
+    if (
+      donation.userId._id.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ error: "Akses ditolak" });
     }
-    
+
     res.json(donation);
   } catch (err) {
-    console.error('Error getting donation:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error getting donation:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -196,29 +193,29 @@ exports.getDonationByTransactionId = async (req, res) => {
 exports.getAllDonations = async (req, res) => {
   try {
     const { page = 1, limit = 10, status, paymentMethod } = req.query;
-    
+
     let filter = {};
     if (status) filter.paymentStatus = status;
     if (paymentMethod) filter.paymentMethod = paymentMethod;
-    
+
     const donations = await Donation.find(filter)
-      .populate('campaignId', 'title imageUrl')
-      .populate('userId', 'nama email')
+      .populate("campaignId", "title imageUrl")
+      .populate("userId", "nama email")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
-    
+
     const total = await Donation.countDocuments(filter);
-    
+
     res.json({
       donations,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
   } catch (err) {
-    console.error('Error getting all donations:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error getting all donations:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -226,38 +223,39 @@ exports.getAllDonations = async (req, res) => {
 exports.updateDonationStatus = async (req, res) => {
   try {
     // Check if user is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admin only." });
     }
 
     const { id } = req.params;
     const { paymentStatus } = req.body;
 
     // Validate status
-    if (!['completed', 'failed', 'pending'].includes(paymentStatus)) {
-      return res.status(400).json({ message: 'Invalid payment status' });
+    if (!["completed", "failed", "pending"].includes(paymentStatus)) {
+      return res.status(400).json({ message: "Invalid payment status" });
     }
 
     const donation = await Donation.findById(id);
     if (!donation) {
-      return res.status(404).json({ message: 'Donation not found' });
+      return res.status(404).json({ message: "Donation not found" });
     }
 
     // Update donation
     donation.paymentStatus = paymentStatus;
-    if (paymentStatus === 'completed') {
+    if (paymentStatus === "completed") {
       donation.completedAt = new Date();
     }
+
+    const oldStatus = donation.paymentStatus;
 
     await donation.save();
 
     res.json({
-      message: 'Donation status updated successfully',
-      donation
+      message: "Donation status updated successfully",
+      donation,
     });
-
   } catch (error) {
-    console.error('Error updating donation status:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error updating donation status:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

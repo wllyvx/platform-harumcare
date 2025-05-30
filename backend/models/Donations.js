@@ -68,4 +68,29 @@ donationSchema.pre('save', function(next) {
   next();
 });
 
+donationSchema.pre('save', async function(next) {
+  if (this.isModified('paymentStatus')) {
+    const Campaign = mongoose.model('Campaign');
+    const oldStatus = this.paymentStatus || 'pending'; // Ambil status lama
+    const newStatus = this.get('paymentStatus');
+
+    if (newStatus === 'completed' && oldStatus !== 'completed') {
+      await Campaign.findByIdAndUpdate(this.campaignId, {
+        $inc: {
+          currentAmount: this.amount,
+          donorCount: 1,
+        },
+      });
+    } else if (oldStatus === 'completed' && newStatus === 'failed') {
+      await Campaign.findByIdAndUpdate(this.campaignId, {
+        $inc: {
+          currentAmount: -this.amount,
+          donorCount: -1,
+        },
+      });
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model('Donation', donationSchema);
