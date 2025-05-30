@@ -221,3 +221,43 @@ exports.getAllDonations = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Update donation status (admin only)
+exports.updateDonationStatus = async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    const { id } = req.params;
+    const { paymentStatus } = req.body;
+
+    // Validate status
+    if (!['completed', 'failed', 'pending'].includes(paymentStatus)) {
+      return res.status(400).json({ message: 'Invalid payment status' });
+    }
+
+    const donation = await Donation.findById(id);
+    if (!donation) {
+      return res.status(404).json({ message: 'Donation not found' });
+    }
+
+    // Update donation
+    donation.paymentStatus = paymentStatus;
+    if (paymentStatus === 'completed') {
+      donation.completedAt = new Date();
+    }
+
+    await donation.save();
+
+    res.json({
+      message: 'Donation status updated successfully',
+      donation
+    });
+
+  } catch (error) {
+    console.error('Error updating donation status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
