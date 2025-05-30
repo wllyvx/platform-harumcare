@@ -15,7 +15,8 @@ export async function getStaticPaths() {
       throw new Error(`HTTP error! Status: ${response.status}, ${response.statusText}`);
     }
     
-    const campaigns = await response.json();
+    const data = await response.json();
+    const campaigns = data.campaigns;
     
     if (!campaigns || campaigns.length === 0) {
       console.warn('No campaigns found, returning empty paths array');
