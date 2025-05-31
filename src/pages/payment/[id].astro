@@ -1,0 +1,220 @@
+---
+import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
+
+export const prerender = false;
+---
+
+<PrimaryLayout>
+  <section class="w-full relative max-w-6xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Konfirmasi Pembayaran</h1>
+    <div id="payment-details" class="bg-gray-100 p-6 rounded-lg mb-6 hidden">
+      <h2 class="text-xl font-semibold mb-4">Detail Pembayaran</h2>
+      <p class="text-gray-700 mb-2">Nomor Rekening: <span class="font-medium">1234-5678-9012 (Bank XYZ)</span></p>
+      <p class="text-gray-700 mb-2">Jumlah Transfer: <span id="total-amount" class="font-medium"></span></p>
+      <p class="text-gray-700 mb-2">Kode Unik: <span id="unique-code" class="font-medium"></span></p>
+      <p class="text-gray-500 text-sm">Harap transfer sesuai jumlah di atas termasuk kode unik.</p>
+    </div>
+    <div id="loading" class="text-center">Memuat data donasi...</div>
+    <div id="error" class="bg-red-100 p-6 rounded-lg text-center hidden">
+      <p class="text-red-700">Gagal memuat data donasi. Silakan coba lagi atau hubungi admin.</p>
+    </div>
+
+    <form id="upload-proof-form" class="space-y-4 hidden" data-donation-id="" data-campaign-id="">
+      <div>
+        <label for="proof-input" class="block text-sm font-medium text-gray-700">Unggah Bukti Transfer</label>
+        <input
+          type="file"
+          id="proof-input"
+          name="proof"
+          accept="image/*"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          required
+        />
+        <div id="proof-preview" class="hidden mt-4">
+          <img id="preview-proof" src="" alt="Preview" class="w-full max-w-xs mx-auto rounded-lg shadow-md" />
+          <p class="text-sm text-gray-500 text-center mt-2">Pratinjau Bukti Transfer</p>
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
+      >
+        Kirim Bukti Transfer
+      </button>
+    </form>
+  </section>
+</PrimaryLayout>
+
+<script>
+  const url = new URL(window.location.href);
+  const transactionId = url.pathname.split('/').pop();
+  console.log("Fetching donation with transactionId:", transactionId);
+
+  async function fetchDonation() {
+    const loading = document.getElementById("loading");
+    const error = document.getElementById("error");
+    const paymentDetails = document.getElementById("payment-details");
+    const uploadForm = document.getElementById("upload-proof-form");
+
+    loading.classList.remove("hidden");
+    paymentDetails.classList.add("hidden");
+    error.classList.add("hidden");
+    uploadForm.classList.add("hidden");
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Token autentikasi tidak ditemukan. Silakan login.");
+      }
+
+      const response = await fetch(`http://localhost:3000/api/donations/transaction/${transactionId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Fetch error: ${response.status} ${response.statusText}`);
+      }
+
+      const donation = await response.json();
+
+      const formatCurrency = (amount) => {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(amount);
+      };
+      const uniqueCode = donation.uniqueCode || donation.unique_code || 0;
+      
+      console.log("Donation data:", donation);
+      console.log("Amount:", donation.amount, "Type:", typeof donation.amount);
+      console.log("Unique code:", donation.uniqueCode, "Type:", typeof donation.uniqueCode);
+
+      const totalAmount = donation.amount + uniqueCode;
+      console.log("Using unique code:", uniqueCode);
+      console.log("Total amount:", totalAmount);
+
+      document.getElementById("total-amount").textContent = formatCurrency(totalAmount);
+      document.getElementById("unique-code").textContent = donation.uniqueCode;
+      document.querySelector("#upload-proof-form").setAttribute("data-donation-id", donation._id);
+      document.querySelector("#upload-proof-form").setAttribute("data-campaign-id", donation.campaignId);
+
+      loading.classList.add("hidden");
+      paymentDetails.classList.remove("hidden");
+      uploadForm.classList.remove("hidden");
+    } catch (error) {
+      console.error("Error fetching donation:", error.message);
+      loading.classList.add("hidden");
+      error.classList.remove("hidden");
+    }
+  }
+
+  async function uploadImage(file) {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3000/api/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload proof of transfer");
+      }
+
+      const result = await response.json();
+      return result.imageUrl;
+    } catch (error) {
+      console.error("Error uploading proof:", error.message);
+      return null;
+    }
+  }
+
+  async function updateDonationWithProof(donationId, proofUrl) {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:3000/api/donations/${donationId}/proof`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ proofOfTransfer: proofUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update donation with proof");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating donation:", error.message);
+      return null;
+    }
+  }
+
+  function setupImagePreview(inputId, previewId, imgId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const img = document.getElementById(imgId);
+
+    if (input && preview && img) {
+      input.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            img.src = e.target.result;
+            preview.classList.remove("hidden");
+          };
+          reader.readAsDataURL(file);
+        } else {
+          preview.classList.add("hidden");
+        }
+      });
+    }
+  }
+
+  window.addEventListener("load", () => {
+    fetchDonation();
+    setupImagePreview("proof-input", "proof-preview", "preview-proof");
+
+    const uploadForm = document.querySelector("#upload-proof-form");
+    if (uploadForm) {
+      uploadForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const proofFile = document.querySelector("#proof-input").files[0];
+        const donationId = uploadForm.getAttribute("data-donation-id");
+        const campaignId = uploadForm.getAttribute("data-campaign-id");
+
+        if (!proofFile) {
+          alert("Harap unggah bukti transfer.");
+          return;
+        }
+
+        const proofUrl = await uploadImage(proofFile);
+        if (!proofUrl) {
+          alert("Gagal mengunggah bukti transfer. Coba lagi.");
+          return;
+        }
+
+        const updatedDonation = await updateDonationWithProof(donationId, proofUrl);
+        if (updatedDonation) {
+          alert("Bukti transfer berhasil diunggah. Menunggu konfirmasi admin.");
+          window.location.href = `/campaign/${campaignId}`;
+        } else {
+          alert("Gagal memperbarui donasi. Coba lagi.");
+        }
+      });
+    }
+  });
+</script>

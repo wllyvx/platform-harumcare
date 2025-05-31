@@ -143,14 +143,19 @@ const formatCurrency = (amount) => {
         type="submit"
         class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
       >
-        Kirim Donasi
+        Lanjut ke Pembayaran
       </button>
     </form>
   </section>
 </PrimaryLayout>
 
 <script>
-  async function donate(amount, campaignId, paymentMethod, donorName) {
+
+  const generateUniqueCode = () => {
+  return Math.floor(1000 + Math.random() * 9000); // Kode unik 4 digit
+};
+
+  async function initiatePayment(amount, campaignId, paymentMethod, donorName) {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Silakan login untuk berdonasi.");
@@ -158,8 +163,9 @@ const formatCurrency = (amount) => {
     }
 
     try {
+      const uniqueCode = generateUniqueCode();
       const response = await fetch(
-        `http://localhost:3000/api/campaigns/${campaignId}/donate`,
+        `http://localhost:3000/api/donations`,
         {
           method: "POST",
           headers: {
@@ -173,19 +179,21 @@ const formatCurrency = (amount) => {
             donorName: donorName || "Anonymous",
             isAnonymous: !donorName,
             message: "",
+            uniqueCode,
           }),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Gagal memproses donasi");
+        throw new Error(errorData.error || "Gagal memulai pembayaran");
       }
 
       const result = await response.json();
+      window.location.href = `/payment/${result.donation.transactionId}`; // Alihkan ke halaman pembayaran dengan transactionId
       return result;
     } catch (error) {
-      console.error("Error donating:", error.message);
+      console.error("Error initiating payment:", error.message);
       return null;
     }
   }
@@ -220,18 +228,8 @@ const formatCurrency = (amount) => {
           return;
         }
 
-        const result = await donate(amount, campaignId, paymentMethod, donorName);
-        console.log("Donation response:", result);
-
-        if (
-          result &&
-          result.message === "Donasi telah dikirim dan menunggu approval dari admin"
-        ) {
-          alert(result.message);
-          window.location.href = `/campaign/${campaignId}`; // Kembali ke halaman campaign
-        } else {
-          alert(result?.error || "Gagal memproses donasi. Coba lagi.");
-        }
+        const result = await initiatePayment(amount, campaignId, paymentMethod, donorName);
+        console.log("Payment initiation response:", result);
       });
     } else {
       console.error("Donate form not found in DOM");

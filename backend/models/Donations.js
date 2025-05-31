@@ -43,6 +43,10 @@ const donationSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
+  proofOfTransfer: {
+    type: String,
+    default: ''
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 

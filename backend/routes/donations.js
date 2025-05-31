@@ -24,4 +24,7 @@ router.patch('/:id/status', authenticateToken, donationController.updateDonation
 // Update payment status (for payment gateway webhook)
 router.put('/payment-status', donationController.updatePaymentStatus);
 
+// Update proof of transfer (user only)
+router.patch('/:donationId/proof', authenticateToken, donationController.updateDonationProof);
+
 module.exports = router;

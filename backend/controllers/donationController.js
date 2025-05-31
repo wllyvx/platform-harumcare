@@ -6,7 +6,7 @@ const User = require("../models/Users");
 // Create donation
 exports.createDonation = async (req, res) => {
   try {
-    const { campaignId, amount, message, paymentMethod, isAnonymous } = req.body;
+    const { campaignId, amount, message, paymentMethod, isAnonymous, uniqueCode } = req.body;
     const userId = req.user.userId;
 
     // Validasi input
@@ -45,7 +45,8 @@ exports.createDonation = async (req, res) => {
       paymentMethod,
       donorName: isAnonymous ? "Anonim" : user.nama,
       isAnonymous,
-      paymentStatus: "pending", // Pastikan status awal adalah pending
+      paymentStatus: "pending",
+      uniqueCode, // Simpan kode unik jika ada
     });
 
     await donation.save();
@@ -58,10 +59,41 @@ exports.createDonation = async (req, res) => {
         amount: donation.amount,
         paymentStatus: donation.paymentStatus,
         paymentMethod: donation.paymentMethod,
+        uniqueCode: donation.uniqueCode,
       },
     });
   } catch (err) {
     console.error("Error creating donation:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Update donation with proof of transfer
+exports.updateDonationProof = async (req, res) => {
+  try {
+    const { donationId } = req.params;
+    const { proofOfTransfer } = req.body;
+
+    if (!proofOfTransfer) {
+      return res.status(400).json({ error: "Bukti transfer wajib diisi" });
+    }
+
+    const donation = await Donation.findById(donationId);
+    if (!donation) {
+      return res.status(404).json({ error: "Donasi tidak ditemukan" });
+    }
+
+    // Pastikan hanya pengguna yang membuat donasi yang dapat mengunggah bukti
+    if (donation.userId.toString() !== req.user.userId) {
+      return res.status(403).json({ error: "Akses ditolak" });
+    }
+
+    donation.proofOfTransfer = proofOfTransfer;
+    await donation.save();
+
+    res.json({ message: "Bukti transfer berhasil diunggah", donation });
+  } catch (err) {
+    console.error("Error updating proof of transfer:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -152,11 +184,9 @@ exports.updatePaymentStatus = async (req, res) => {
   }
 };
 
-// Get donation by transaction ID
 exports.getDonationByTransactionId = async (req, res) => {
   try {
     const { transactionId } = req.params;
-
     const donation = await Donation.findOne({ transactionId })
       .populate("campaignId", "title")
       .populate("userId", "nama email");
@@ -165,7 +195,7 @@ exports.getDonationByTransactionId = async (req, res) => {
       return res.status(404).json({ error: "Donasi tidak ditemukan" });
     }
 
-    // Check if user owns this donation or is admin
+    // Jika hanya pemilik atau admin yang boleh akses
     if (
       donation.userId._id.toString() !== req.user.userId &&
       req.user.role !== "admin"
