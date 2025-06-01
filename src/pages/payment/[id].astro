@@ -210,7 +210,7 @@ export const prerender = false;
         const updatedDonation = await updateDonationWithProof(donationId, proofUrl);
         if (updatedDonation) {
           alert("Bukti transfer berhasil diunggah. Menunggu konfirmasi admin.");
-          window.location.href = `/campaign/${campaignId}`;
+          window.location.href = `/`;
         } else {
           alert("Gagal memperbarui donasi. Coba lagi.");
         }
