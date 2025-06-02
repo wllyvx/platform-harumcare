@@ -43,7 +43,7 @@ exports.createDonation = async (req, res) => {
       amount,
       message,
       paymentMethod,
-      donorName: isAnonymous ? "Anonim" : user.nama,
+      donorName: isAnonymous ? "Hamba Allah" : user.nama,
       isAnonymous,
       paymentStatus: "pending",
       uniqueCode, // Simpan kode unik jika ada
