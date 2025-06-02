@@ -28,7 +28,8 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       campaigns: '/api/campaigns',
       donations: '/api/donations',
-      upload: '/api/upload'
+      upload: '/api/upload',
+      users: '/api/users'
     }
   });
 });
@@ -57,6 +58,10 @@ app.use('/api/campaigns', campaignRoutes);
 // donation routes
 const donationRoutes = require('./routes/donations');
 app.use('/api/donations', donationRoutes);
+
+// users routes
+const userRoutes = require('./routes/users');
+app.use('/api/users', authenticateToken, restrictToAdmin, userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
