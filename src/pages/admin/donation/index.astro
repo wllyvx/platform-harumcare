@@ -637,37 +637,43 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
           >
             Detail
           </button>
-          ${
-            donation.paymentStatus === "pending"
-              ? `
-            <div class="relative">
-              <button
-                  onclick="toggleStatusDropdown('${donation._id}')"
-                  class="text-green-600 hover:text-green-800 text-sm font-medium flex items-center"
-                >
-                  Update
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </button>
+          <div class="relative">
+            <button
+              onclick="toggleStatusDropdown('${donation._id}')"
+              class="text-green-600 hover:text-green-800 text-sm font-medium flex items-center"
+            >
+              Update Status
+              <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
             <div id="dropdown-${donation._id}" class="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10 hidden">
               <button
                 onclick="updateStatus('${donation._id}', 'completed')"
                 class="block w-full px-4 py-2 text-sm text-left text-green-600 hover:bg-green-50 rounded-t-md"
               >
-                ✓ Completed
+                ✓ Selesai
+              </button>
+              <button
+                onclick="updateStatus('${donation._id}', 'pending')"
+                class="block w-full px-4 py-2 text-sm text-left text-yellow-600 hover:bg-yellow-50"
+              >
+                ⟳ Pending
               </button>
               <button
                 onclick="updateStatus('${donation._id}', 'failed')"
                 class="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 rounded-b-md"
               >
-                ✗ Failed
+                ✗ Gagal
               </button>
             </div>
           </div>
-          `
-              : ""
-          }
+          <button
+            onclick="deleteDonation('${donation._id}')"
+            class="text-red-600 hover:text-red-800 text-sm font-medium"
+          >
+            Hapus
+          </button>
         </div>
       </td>
     `;
@@ -778,6 +784,38 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     }
   }
 
+  // Add delete donation function
+  async function deleteDonation(donationId) {
+    if (!confirm("Apakah Anda yakin ingin menghapus donasi ini?")) {
+      return;
+    }
+
+    try {
+      const authenticatedFetch = createAuthenticatedFetch();
+      const response = await authenticatedFetch(
+        `http://localhost:3000/api/donations/${donationId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.status === 401) {
+        showAuthError();
+        return;
+      }
+
+      if (response.ok) {
+        alert("Donasi berhasil dihapus");
+        fetchData(); // Refresh data
+      } else {
+        alert("Gagal menghapus donasi");
+      }
+    } catch (error) {
+      console.error("Error deleting donation:", error);
+      alert("Terjadi kesalahan saat menghapus donasi");
+    }
+  }
+
   // Status dropdown
   function toggleStatusDropdown(donationId) {
     // Close all other dropdowns first
@@ -852,4 +890,5 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
   window.viewDonation = viewDonation;
   window.updateStatus = updateStatus;
   window.toggleStatusDropdown = toggleStatusDropdown;
+  window.deleteDonation = deleteDonation;
 </script>

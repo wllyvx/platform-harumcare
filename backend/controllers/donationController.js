@@ -267,36 +267,99 @@ exports.updateDonationStatus = async (req, res) => {
 
     await donation.save();
 
-    // Tambahkan logika pembaruan Campaign secara eksplisit
-    if (paymentStatus === "completed" && oldStatus !== "completed") {
-      console.log("Updating Campaign - Incrementing currentAmount and donorCount:", {
-        campaignId: donation.campaignId,
-        amount: donation.amount,
-      });
-      await Campaign.findByIdAndUpdate(donation.campaignId, {
-        $inc: { currentAmount: donation.amount, donorCount: 1 },
-      }, { new: true }); // { new: true } untuk mengembalikan dokumen yang diperbarui
-    } else if (oldStatus === "completed" && paymentStatus === "failed") {
+    // Hitung ulang total currentAmount berdasarkan semua donasi completed
+    const completedDonations = await Donation.find({
+      campaignId: donation.campaignId,
+      paymentStatus: 'completed'
+    });
+
+    const totalAmount = completedDonations.reduce((sum, d) => sum + d.amount, 0);
+    const totalDonors = completedDonations.length;
+
+    // Update campaign dengan nilai yang benar
+    await Campaign.findByIdAndUpdate(donation.campaignId, {
+      currentAmount: totalAmount,
+      donorCount: totalDonors
+    });
+
+    console.log("Campaign updated with recalculated values:", {
+      campaignId: donation.campaignId,
+      totalAmount,
+      totalDonors
+    });
+
+    res.json({
+      message: "Donation status updated successfully",
+      donation,
+      updatedCampaign: {
+        currentAmount: totalAmount,
+        donorCount: totalDonors
+      }
+    });
+  } catch (error) {
+    console.error("Error updating donation status:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete donation (admin only)
+exports.deleteDonation = async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Unauthorized access' });
+    }
+
+    const { id } = req.params;
+    const donation = await Donation.findById(id);
+
+    if (!donation) {
+      return res.status(404).json({ error: 'Donasi tidak ditemukan' });
+    }
+
+    // Jika donasi yang dihapus berstatus completed, kurangi currentAmount dan donorCount pada campaign
+    if (donation.paymentStatus === 'completed') {
       console.log("Updating Campaign - Decrementing currentAmount and donorCount:", {
         campaignId: donation.campaignId,
         amount: donation.amount,
       });
       await Campaign.findByIdAndUpdate(donation.campaignId, {
         $inc: { currentAmount: -donation.amount, donorCount: -1 },
-      }, { new: true });
+      });
     }
 
-    console.log("After update - Donation:", {
-      id: donation._id,
-      updatedStatus: donation.paymentStatus,
+    await Donation.findByIdAndDelete(id);
+
+    // Hitung ulang total currentAmount berdasarkan semua donasi completed
+    const completedDonations = await Donation.find({
+      campaignId: donation.campaignId,
+      paymentStatus: 'completed'
     });
 
-    res.json({
-      message: "Donation status updated successfully",
-      donation,
+    const totalAmount = completedDonations.reduce((sum, d) => sum + d.amount, 0);
+    const totalDonors = completedDonations.length;
+
+    // Update campaign dengan nilai yang benar
+    await Campaign.findByIdAndUpdate(donation.campaignId, {
+      currentAmount: totalAmount,
+      donorCount: totalDonors
     });
-  } catch (error) {
-    console.error("Error updating donation status:", error);
-    res.status(500).json({ message: "Server error" });
+
+    console.log("Campaign updated with recalculated values:", {
+      campaignId: donation.campaignId,
+      totalAmount,
+      totalDonors
+    });
+
+    res.json({ 
+      message: 'Donasi berhasil dihapus',
+      updatedCampaign: {
+        currentAmount: totalAmount,
+        donorCount: totalDonors
+      }
+    });
+  } catch (err) {
+    console.error('Error deleting donation:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };

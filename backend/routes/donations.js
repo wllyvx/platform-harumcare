@@ -21,6 +21,9 @@ router.get('/', authenticateToken, donationController.getAllDonations);
 // Update donation status (admin only)
 router.patch('/:id/status', authenticateToken, donationController.updateDonationStatus);
 
+// Delete donation (admin only)
+router.delete('/:id', authenticateToken, donationController.deleteDonation);
+
 // Update payment status (for payment gateway webhook)
 router.put('/payment-status', donationController.updatePaymentStatus);
 
