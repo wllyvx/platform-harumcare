@@ -3,129 +3,131 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
 ---
 
 <AdminLayout title="Create Campaign">
-  <section id="create-section" class="create-campaign-section max-w-7xl mx-auto px-4 py-16" style="display: none;">
-    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Buat Campaign Baru</h2>
-    <form id="create-campaign-form" class="max-w-md mx-auto" enctype="multipart/form-data">
-      <div class="mb-6">
-        <label for="title-input" class="block text-gray-600 mb-2"></label>
-        <input
-          placeholder="Judul Campaign"
-          type="text"
-          name="title"
-          required
-          id="title-input"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
-        <label for="description-input" class="block text-gray-600 mb-2"></label>
-        <textarea
-          placeholder="Deskripsi Campaign"
-          name="description"
-          id="description-input"
-          rows="4"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        ></textarea>
-      </div>
-      <div class="mb-6">
-        <label for="image-input" class="block text-gray-600 mb-2">Campaign Image</label>
-        <div class="space-y-4">
+  <section id="create-section" class="create-campaign-section max-w-7xl flex items-center justify-center mx-auto px-4 py-16" style="display: none;">
+    <div class="container bg-white shadow-2xl shadow-blue-500/50 max-w-2xl mx-auto px-8 md:px-0 py-11 rounded-2xl">
+      <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mb-8 text-center">Buat Campaign Baru</h2>
+      <form id="create-campaign-form" class="max-w-md mx-auto" enctype="multipart/form-data">
+        <div class="mb-6">
+          <label for="title-input" class="block text-gray-600 mb-2"></label>
           <input
-            type="file"
-            name="image"
-            id="image-input"
-            accept="image/*"
-            class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            placeholder="Judul Campaign"
+            type="text"
+            name="title"
+            required
+            id="title-input"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
-          <div id="image-preview" class="hidden">
-            <img id="preview-img" src="" alt="Preview" class="w-full max-w-xs mx-auto rounded-lg shadow-md" />
-            <p class="text-sm text-gray-500 text-center mt-2">Image Preview</p>
+        </div>
+        <div class="mb-6">
+          <label for="description-input" class="block text-gray-600 mb-2"></label>
+          <textarea
+            placeholder="Deskripsi Campaign"
+            name="description"
+            id="description-input"
+            rows="4"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          ></textarea>
+        </div>
+        <div class="mb-6">
+          <label for="image-input" class="block text-gray-600 mb-2">Campaign Image</label>
+          <div class="space-y-4">
+            <input
+              type="file"
+              name="image"
+              id="image-input"
+              accept="image/*"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            <div id="image-preview" class="hidden">
+              <img id="preview-img" src="" alt="Preview" class="w-full max-w-xs mx-auto rounded-lg shadow-md" />
+              <p class="text-sm text-gray-500 text-center mt-2">Image Preview</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="mb-6">
-        <label for="targetAmount-input" class="block text-gray-600 mb-2"></label>
-        <input
-          placeholder="Target Donasi"
-          type="number"
-          name="targetAmount"
-          required
-          id="targetAmount-input"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
-        <label for="startDate-input" class="block text-gray-600 mb-2">Start Date</label>
-        <input
-          type="date"
-          name="startDate"
-          required
-          id="startDate-input"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
-        <label for="endDate-input" class="block text-gray-600 mb-2">End Date</label>
-        <input
-          type="date"
-          name="endDate"
-          required
-          id="endDate-input"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
-        <label for="organizationName-input" class="block text-gray-600 mb-2"></label>
-        <input
-          placeholder="Nama Organisasi"
-          type="text"
-          name="organizationName"
-          id="organizationName-input"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-      </div>
-      <div class="mb-6">
-        <label for="organizationLogo-input" class="block text-gray-600 mb-2">Logo Organisasi</label>
-        <div class="space-y-4">
+        <div class="mb-6">
+          <label for="targetAmount-input" class="block text-gray-600 mb-2"></label>
           <input
-            type="file"
-            name="organizationLogo"
-            id="organizationLogo-input"
-            accept="image/*"
-            class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+            placeholder="Target Donasi"
+            type="number"
+            name="targetAmount"
+            required
+            id="targetAmount-input"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
-          <div id="logo-preview" class="hidden">
-            <img id="preview-logo" src="" alt="Logo Preview" class="w-24 h-24 mx-auto rounded-lg shadow-md object-cover" />
-            <p class="text-sm text-gray-500 text-center mt-2">Logo Preview</p>
+        </div>
+        <div class="mb-6">
+          <label for="startDate-input" class="block text-gray-600 mb-2">Start Date</label>
+          <input
+            type="date"
+            name="startDate"
+            required
+            id="startDate-input"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+        <div class="mb-6">
+          <label for="endDate-input" class="block text-gray-600 mb-2">End Date</label>
+          <input
+            type="date"
+            name="endDate"
+            required
+            id="endDate-input"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+        <div class="mb-6">
+          <label for="organizationName-input" class="block text-gray-600 mb-2"></label>
+          <input
+            placeholder="Nama Organisasi"
+            type="text"
+            name="organizationName"
+            id="organizationName-input"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+        <div class="mb-6">
+          <label for="organizationLogo-input" class="block text-gray-600 mb-2">Logo Organisasi</label>
+          <div class="space-y-4">
+            <input
+              type="file"
+              name="organizationLogo"
+              id="organizationLogo-input"
+              accept="image/*"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+            />
+            <div id="logo-preview" class="hidden">
+              <img id="preview-logo" src="" alt="Logo Preview" class="w-24 h-24 mx-auto rounded-lg shadow-md object-cover" />
+              <p class="text-sm text-gray-500 text-center mt-2">Logo Preview</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="mb-8">
-        <label for="category-input" class="block text-gray-600 mb-2">Kategori</label>
-        <select
-          name="category"
-          id="category-input"
-          class="w-full p-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        <div class="mb-8">
+          <label for="category-input" class="block text-gray-600 mb-2">Kategori</label>
+          <select
+            name="category"
+            id="category-input"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          >
+            <option value="">Pilih Kategori</option>
+            <option value="health">Health</option>
+            <option value="education">Education</option>
+            <option value="environment">Environment</option>
+            <option value="disaster">Disaster Relief</option>
+            <option value="poverty">Poverty</option>
+            <option value="animals">Animals</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          id="submit-btn"
+          class="w-full bg-blue-600 text-white p-3 rounded-full font-medium hover:bg-blue-700 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          <option value="">Pilih Kategori</option>
-          <option value="health">Health</option>
-          <option value="education">Education</option>
-          <option value="environment">Environment</option>
-          <option value="disaster">Disaster Relief</option>
-          <option value="poverty">Poverty</option>
-          <option value="animals">Animals</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <button
-        type="submit"
-        id="submit-btn"
-        class="w-full bg-blue-600 text-white p-3 rounded-full font-medium hover:bg-blue-700 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
-      >
-        <span id="submit-text">Buat Campaign</span>
-        <span id="loading-text" class="hidden">Membuat...</span>
-      </button>
-    </form>
+          <span id="submit-text">Buat Campaign</span>
+          <span id="loading-text" class="hidden">Membuat...</span>
+        </button>
+      </form>
+    </div>
   </section>
 </AdminLayout>
 
