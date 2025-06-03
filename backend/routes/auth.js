@@ -11,8 +11,8 @@ router.post('/register-admin', authenticateToken, restrictToAdmin, async (req, r
     const { nama, username, email, password, nomorHp, alamat, role } = req.body;
     
     // Validasi input
-    if (!nama || !username || !email || !password || !nomorHp || !alamat) {
-      return res.status(400).json({ error: 'Semua field wajib diisi' });
+    if (!nama || !username || !email || !password || !nomorHp) {
+      return res.status(400).json({ error: 'Nama, username, email, password, dan nomor HP wajib diisi' });
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,7 +22,7 @@ router.post('/register-admin', authenticateToken, restrictToAdmin, async (req, r
       email, 
       password: hashedPassword, 
       nomorHp, 
-      alamat, 
+      ...(alamat && { alamat }), // Hanya tambahkan alamat jika ada
       role: role || 'admin' 
     });
     await user.save();
