@@ -14,14 +14,14 @@ import "../styles/global.css";
       </div>
       <form id="login-form" class="max-w-md mx-auto">
         <div class="mb-6">
-          <label for="username-input" class="hidden text-gray-600 mb-2">Username</label>
+          <label for="username-input" class="hidden text-gray-600 mb-2">Username atau Email</label>
           <input
             type="text"
             name="username"
             required
             id="username-input"
             class="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
-            placeholder="Username"
+            placeholder="Username atau Email"
           />
         </div>
         <div class="mb-8">
@@ -43,14 +43,19 @@ import "../styles/global.css";
         </button>
       </form>
       <div class="text-center mt-8">
-        <p>Belum punya akun? <span class="font-bold text-blue-400"><a href="#">Daftar</a></span></p>
+        <p>Belum punya akun? <span class="font-bold text-blue-400"><a href="/signup">Daftar</a></span></p>
       </div>
     </div>
   </section>
 
 <script>
+  interface LoginData {
+    username: string;
+    password: string;
+  }
+
   // Fungsi login
-  async function loginUser(data) {
+  async function loginUser(data: LoginData) {
     try {
       const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
@@ -67,7 +72,9 @@ import "../styles/global.css";
       }
       return result;
     } catch (error) {
-      console.error('Error logging in:', error.message);
+      if (error instanceof Error) {
+        console.error('Error logging in:', error.message);
+      }
       return null;
     }
   }
@@ -79,17 +86,29 @@ import "../styles/global.css";
       loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         console.log('Login form submitted');
-        const username = document.querySelector('#username-input').value;
-        const password = document.querySelector('#password-input').value;
-        const data = { username, password };
+        
+        const usernameInput = document.querySelector('#username-input') as HTMLInputElement;
+        const passwordInput = document.querySelector('#password-input') as HTMLInputElement;
+        
+        if (!usernameInput || !passwordInput) {
+          console.error('Required form elements not found');
+          return;
+        }
+
+        const data = { 
+          username: usernameInput.value, 
+          password: passwordInput.value 
+        };
+        
         console.log('Sending login request with:', data);
         const result = await loginUser(data);
         console.log('Login response:', result);
+        
         if (result && result.token) {
-          window.location.href = '/'; // Redirect ke halaman utama setelah login
+          window.location.href = '/';
           console.log('Login successful, redirecting to home');
         } else {
-          alert('Login failed. Please check your credentials.');
+          alert('Login gagal. Silakan periksa username/email dan password Anda.');
           console.log('Login failed');
         }
       });
