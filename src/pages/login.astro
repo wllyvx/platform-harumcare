@@ -1,52 +1,56 @@
 ---
-import "../styles/global.css";
+import AuthLayout from "../layouts/AuthLayout.astro";
 ---
 
+<AuthLayout>
 
-  <section class="login-section flex flex-col md:flex-row justify-center items-center h-full py-0 md:py-24 bg-stone-500 max-w-7xl mx-auto">
-    <div class="flex justify-center w-full md:w-[50vw]">
-      <img src="/images/UI/login-UI.png" alt="" class="h-60 md:h-96 w-auto mb-2">
-    </div>
-    <div class="rounded-2xl bg-white shadow-2xl shadow-blue-500/50 w-full md:w-[30vw] px-8 py-8">
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Selamat Datang!</h2>
-        <p>Silahkan login terlebih dahulu</p>
+  <section class="login-section flex flex-col md:flex-row justify-center items-center h-full py-0 md:py-24 bg-gray-50 max-w-7xl mx-auto">
+    <div class="bg-white shadow-2xl shadow-blue-500/50 border border-gray-200 rounded-2xl flex overflow-hidden">
+      <div class="flex justify-center w-full md:w-[50vw]">
+        <img src="/images/UI/login-cover.jpg" alt="" class="h-full w-auto mb-2">
       </div>
-      <form id="login-form" class="max-w-md mx-auto">
-        <div class="mb-6">
-          <label for="username-input" class="hidden text-gray-600 mb-2">Username atau Email</label>
-          <input
-            type="text"
-            name="username"
-            required
-            id="username-input"
-            class="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
-            placeholder="Username atau Email"
-          />
-        </div>
+      <div class="bg-white flex flex-col justify-center items-center shadow-2xl w-full md:w-[30vw] px-8 py-8">
         <div class="mb-8">
-          <label for="password-input" class="hidden text-gray-600 mb-2">Password</label>
-          <input
-            type="password"
-            name="password"
-            required
-            id="password-input"
-            class="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
-            placeholder="Password"
-          />
+          <h2 class="text-3xl font-bold text-gray-800">Selamat Datang!</h2>
+          <p>Silahkan login terlebih dahulu</p>
         </div>
-        <button
-          type="submit"
-          class="w-full bg-blue-600 text-white p-3 rounded-full font-medium hover:bg-blue-700 transition-colors duration-300"
-        >
-          Login
-        </button>
-      </form>
-      <div class="text-center mt-8">
-        <p>Belum punya akun? <span class="font-bold text-blue-400"><a href="/signup">Daftar</a></span></p>
+        <form id="login-form" class="max-w-md mx-auto">
+          <div class="mb-6">
+            <label for="username-input" class="hidden text-gray-600 mb-2">Username atau Email</label>
+            <input
+              type="text"
+              name="username"
+              required
+              id="username-input"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+              placeholder="Username atau Email"
+            />
+          </div>
+          <div class="mb-8">
+            <label for="password-input" class="hidden text-gray-600 mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              required
+              id="password-input"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+              placeholder="Password"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white p-3 rounded-full font-medium hover:bg-blue-700 transition-colors duration-300"
+          >
+            Login
+          </button>
+        </form>
+        <div class="text-center mt-8">
+          <p>Belum punya akun? <span class="font-bold text-blue-400"><a href="/signup">Daftar</a></span></p>
+        </div>
       </div>
     </div>
   </section>
+</AuthLayout>
 
 <script>
   interface LoginData {

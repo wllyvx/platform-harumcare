@@ -42,7 +42,7 @@ router.post('/register', async (req, res) => {
     const { nama, username, email, password, nomorHp, alamat } = req.body;
     
     // Validasi input
-    if (!nama || !username || !email || !password || !nomorHp || !alamat) {
+    if (!nama || !username || !email || !password || !nomorHp ) {
       return res.status(400).json({ error: 'Semua field wajib diisi' });
     }
     

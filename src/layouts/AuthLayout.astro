@@ -1,0 +1,23 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Harum Care Indonesia - Platform donasi terpercaya dan transparan" />
+    <link rel="icon" href="/favicon.png" />
+    <title>Harum Care Indonesia</title>
+  </head>
+  <body class="font-inter bg-gray-50">
+    <div class="block px-8 py-4">
+        <a href="/">
+            <img src="/images/logo/logo.png" alt="Harum Care Indonesia" class="h-10">
+        </a>
+    </div>
+    <main class="container mx-auto min-h-[calc(100vh-200px)]">
+      <slot />
+    </main>
+  </body>
+</html>
