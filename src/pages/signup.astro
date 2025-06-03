@@ -1,0 +1,132 @@
+---
+import "../styles/global.css";
+---
+
+    <div class="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Daftar Akun Baru
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Sudah punya akun?
+                <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Masuk di sini
+                </a>
+            </p>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <form class="space-y-6" action="/api/auth/signup" method="POST" id="signupForm">
+                    <div>
+                        <label for="nama" class="block text-sm font-medium text-gray-700">
+                            Nama Lengkap
+                        </label>
+                        <div class="mt-1">
+                            <input id="nama" name="nama" type="text" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700">
+                            Username
+                        </label>
+                        <div class="mt-1">
+                            <input id="username" name="username" type="text" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">
+                            Email
+                        </label>
+                        <div class="mt-1">
+                            <input id="email" name="email" type="email" autocomplete="email" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="nomorHp" class="block text-sm font-medium text-gray-700">
+                            Nomor HP
+                        </label>
+                        <div class="mt-1">
+                            <input id="nomorHp" name="nomorHp" type="tel" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">
+                            Password
+                        </label>
+                        <div class="mt-1">
+                            <input id="password" name="password" type="password" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+                            Konfirmasi Password
+                        </label>
+                        <div class="mt-1">
+                            <input id="confirmPassword" name="confirmPassword" type="password" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Daftar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<script>
+const form = document.getElementById('signupForm') as HTMLFormElement;
+const passwordInput = document.getElementById('password') as HTMLInputElement;
+const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
+
+if (form && passwordInput && confirmPasswordInput) {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            alert('Password dan konfirmasi password tidak cocok!');
+            return;
+        }
+
+        const formData = new FormData(form);
+        formData.delete('confirmPassword'); // Hapus confirmPassword karena tidak diperlukan di backend
+        const data = Object.fromEntries(formData);
+        
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                alert('Pendaftaran berhasil!');
+                window.location.href = '/login?registered=true';
+            } else {
+                const error = await response.json();
+                alert(error.error || 'Terjadi kesalahan saat mendaftar');
+            }
+        } catch (error) {
+            alert('Terjadi kesalahan saat mendaftar');
+            console.error('Error:', error);
+        }
+    });
+}
+</script>
