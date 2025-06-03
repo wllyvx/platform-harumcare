@@ -1,9 +1,9 @@
 ---
-import PrimaryLayout from "../layouts/PrimaryLayout.astro";
+import "../styles/global.css";
 ---
 
-<PrimaryLayout>
-  <section class="login-section flex flex-col md:flex-row justify-center items-center h-full py-0 md:py-24 bg-white max-w-7xl mx-auto">
+
+  <section class="login-section flex flex-col md:flex-row justify-center items-center h-full py-0 md:py-24 bg-stone-500 max-w-7xl mx-auto">
     <div class="flex justify-center w-full md:w-[50vw]">
       <img src="/images/UI/login-UI.png" alt="" class="h-60 md:h-96 w-auto mb-2">
     </div>
@@ -47,7 +47,6 @@ import PrimaryLayout from "../layouts/PrimaryLayout.astro";
       </div>
     </div>
   </section>
-</PrimaryLayout>
 
 <script>
   // Fungsi login
