@@ -137,12 +137,184 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
       </div>
     </div>
   </div>
+
+  <!-- View Modal -->
+  <div id="viewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Detail Campaign</h3>
+        <button onclick="closeViewModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="viewModalContent" class="space-y-4">
+        <!-- Content will be populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Edit Campaign</h3>
+        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="editCampaignForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Judul Campaign</label>
+          <input
+            type="text"
+            id="editTitle"
+            name="title"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+          <textarea
+            id="editDescription"
+            name="description"
+            rows="4"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          ></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Target Donasi</label>
+            <input
+              type="number"
+              id="editTargetAmount"
+              name="targetAmount"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+            <select
+              id="editCategory"
+              name="category"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="">Pilih Kategori</option>
+              <!-- Categories will be populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+            <input
+              type="date"
+              id="editStartDate"
+              name="startDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berakhir</label>
+            <input
+              type="date"
+              id="editEndDate"
+              name="endDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Gambar Campaign</label>
+          <input
+            type="file"
+            id="editImage"
+            name="image"
+            accept="image/*"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p class="text-sm text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah gambar</p>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            type="button"
+            onclick="closeEditModal()"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3 text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+          <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Hapus Campaign</h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500">
+            Apakah Anda yakin ingin menghapus campaign ini? Tindakan ini tidak dapat dibatalkan.
+          </p>
+        </div>
+        <div class="items-center px-4 py-3">
+          <button
+            id="confirmDelete"
+            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 mr-2"
+          >
+            Hapus
+          </button>
+          <button
+            onclick="closeDeleteModal()"
+            class="px-4 py-2 bg-gray-100 text-gray-700 text-base font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </AdminLayout>
 
 <script>
   // Campaign data and state
-  let campaigns = [];
-  let filteredCampaigns = [];
+  interface Campaign {
+    _id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    organizationName: string;
+    organizationLogo: string;
+    category: string;
+    targetAmount: number;
+    currentAmount: number;
+    startDate: string;
+    endDate: string;
+  }
+
+  let campaigns: Campaign[] = [];
+  let filteredCampaigns: Campaign[] = [];
   let currentPage = 1;
   const itemsPerPage = 10;
 
@@ -151,19 +323,47 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
   const errorState = document.getElementById('errorState');
   const campaignTable = document.getElementById('campaignTable');
   const campaignTableBody = document.getElementById('campaignTableBody');
-  const searchInput = document.getElementById('searchInput');
-  const categoryFilter = document.getElementById('categoryFilter');
-  const statusFilter = document.getElementById('statusFilter');
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+  const categoryFilter = document.getElementById('categoryFilter') as HTMLSelectElement;
+  const statusFilter = document.getElementById('statusFilter') as HTMLSelectElement;
   const resetFilters = document.getElementById('resetFilters');
   const retryButton = document.getElementById('retryButton');
 
+  // Modal state
+  let selectedCampaignId: string | null = null;
+
   // Utility functions
-  function formatCurrency(amount) {
+  function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0
     }).format(amount);
+  }
+
+  function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  function getCampaignStatus(campaign: Campaign) {
+    const now = new Date();
+    const endDate = new Date(campaign.endDate);
+    
+    if (endDate < now) {
+      return { status: 'expired', label: 'Berakhir', class: 'bg-red-100 text-red-800' };
+    } else if (campaign.currentAmount >= campaign.targetAmount) {
+      return { status: 'completed', label: 'Selesai', class: 'bg-green-100 text-green-800' };
+    } else {
+      return { status: 'active', label: 'Aktif', class: 'bg-blue-100 text-blue-800' };
+    }
+  }
+
+  function calculateProgress(current: number, target: number): number {
+    return Math.min((current / target) * 100, 100);
   }
 
   function populateCategories() {
@@ -199,31 +399,6 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         categorySelect.appendChild(option);
       }
     });
-  }
-
-  function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
-  function getCampaignStatus(campaign) {
-    const now = new Date();
-    const endDate = new Date(campaign.endDate);
-    
-    if (endDate < now) {
-      return { status: 'expired', label: 'Berakhir', class: 'bg-red-100 text-red-800' };
-    } else if (campaign.currentAmount >= campaign.targetAmount) {
-      return { status: 'completed', label: 'Selesai', class: 'bg-green-100 text-green-800' };
-    } else {
-      return { status: 'active', label: 'Aktif', class: 'bg-blue-100 text-blue-800' };
-    }
-  }
-
-  function calculateProgress(current, target) {
-    return Math.min((current / target) * 100, 100);
   }
 
   // Fetch campaigns from API
@@ -402,14 +577,16 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     const showingFrom = document.getElementById('showingFrom');
     const showingTo = document.getElementById('showingTo');
     const totalItems = document.getElementById('totalItems');
+    const totalCampaigns = document.getElementById('totalCampaigns');
     
-    if (showingFrom) showingFrom.textContent = startItem;
-    if (showingTo) showingTo.textContent = endItem;
-    if (totalItems) totalItems.textContent = filteredCampaigns.length;
+    if (showingFrom) showingFrom.textContent = startItem.toString();
+    if (showingTo) showingTo.textContent = endItem.toString();
+    if (totalItems) totalItems.textContent = filteredCampaigns.length.toString();
+    if (totalCampaigns) totalCampaigns.textContent = filteredCampaigns.length.toString();
     
     // Update prev/next buttons
-    const prevButton = document.getElementById('prevPage');
-    const nextButton = document.getElementById('nextPage');
+    const prevButton = document.getElementById('prevPage') as HTMLButtonElement;
+    const nextButton = document.getElementById('nextPage') as HTMLButtonElement;
     
     if (prevButton) {
       prevButton.disabled = currentPage === 1;
@@ -446,19 +623,201 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     updatePagination();
   }
 
-  // Action handlers
-  function viewCampaign(id) {
-    window.location.href = `/admin/campaign/${id}`;
+  // Modal functions
+  function closeViewModal(): void {
+    const modal = document.getElementById('viewModal');
+    if (modal) modal.classList.add('hidden');
   }
 
-  function editCampaign(id) {
-    window.location.href = `/admin/campaign/${id}/edit`;
+  function closeEditModal(): void {
+    const modal = document.getElementById('editModal');
+    if (modal) modal.classList.add('hidden');
   }
 
-  function deleteCampaign(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus campaign ini?')) {
-      // TODO: Implement delete functionality
-      console.log('Delete campaign:', id);
+  function closeDeleteModal(): void {
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  async function viewCampaign(id: string): Promise<void> {
+    try {
+      const response = await fetch(`http://localhost:3000/api/campaigns/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch campaign details');
+      
+      const campaign: Campaign = await response.json();
+      const modal = document.getElementById('viewModal');
+      const content = document.getElementById('viewModalContent');
+      
+      if (modal && content) {
+        content.innerHTML = `
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <img src="${campaign.imageUrl || '/images/empty-image-placeholder.webp'}" 
+                   alt="${campaign.title}" 
+                   class="w-full h-48 object-cover rounded-lg">
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900">Judul Campaign</h4>
+              <p class="text-gray-600">${campaign.title}</p>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900">Deskripsi</h4>
+              <p class="text-gray-600">${campaign.description}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <h4 class="font-medium text-gray-900">Target Donasi</h4>
+                <p class="text-gray-600">${formatCurrency(campaign.targetAmount)}</p>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Donasi Terkumpul</h4>
+                <p class="text-gray-600">${formatCurrency(campaign.currentAmount)}</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <h4 class="font-medium text-gray-900">Tanggal Mulai</h4>
+                <p class="text-gray-600">${formatDate(campaign.startDate)}</p>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Tanggal Berakhir</h4>
+                <p class="text-gray-600">${formatDate(campaign.endDate)}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        modal.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Error viewing campaign:', error);
+      alert('Gagal memuat detail campaign');
+    }
+  }
+
+  async function editCampaign(id: string): Promise<void> {
+    try {
+      const response = await fetch(`http://localhost:3000/api/campaigns/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch campaign details');
+      
+      const campaign: Campaign = await response.json();
+      
+      // Populate form fields
+      const titleInput = document.getElementById('editTitle') as HTMLInputElement;
+      const descriptionInput = document.getElementById('editDescription') as HTMLTextAreaElement;
+      const targetAmountInput = document.getElementById('editTargetAmount') as HTMLInputElement;
+      const categoryInput = document.getElementById('editCategory') as HTMLSelectElement;
+      const startDateInput = document.getElementById('editStartDate') as HTMLInputElement;
+      const endDateInput = document.getElementById('editEndDate') as HTMLInputElement;
+      
+      if (titleInput) titleInput.value = campaign.title;
+      if (descriptionInput) descriptionInput.value = campaign.description;
+      if (targetAmountInput) targetAmountInput.value = campaign.targetAmount.toString();
+      if (categoryInput) categoryInput.value = campaign.category;
+      if (startDateInput) startDateInput.value = new Date(campaign.startDate).toISOString().split('T')[0];
+      if (endDateInput) endDateInput.value = new Date(campaign.endDate).toISOString().split('T')[0];
+      
+      // Show modal
+      const modal = document.getElementById('editModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        
+        // Setup form submission
+        const form = document.getElementById('editCampaignForm') as HTMLFormElement;
+        if (form) {
+          form.onsubmit = async (e) => {
+            e.preventDefault();
+            await handleEditSubmit(id, form);
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error editing campaign:', error);
+      alert('Gagal memuat data campaign');
+    }
+  }
+
+  async function handleEditSubmit(id: string, form: HTMLFormElement): Promise<void> {
+    try {
+      const formData = new FormData(form);
+      const imageFile = (document.getElementById('editImage') as HTMLInputElement)?.files?.[0];
+      
+      // If there's a new image, upload it first
+      let imageUrl = null;
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+        
+        const uploadResponse = await fetch('http://localhost:3000/api/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: imageFormData
+        });
+        
+        if (!uploadResponse.ok) throw new Error('Failed to upload image');
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.url;
+      }
+      
+      // Prepare campaign data
+      const campaignData = {
+        title: formData.get('title'),
+        description: formData.get('description'),
+        targetAmount: Number(formData.get('targetAmount')),
+        category: formData.get('category'),
+        startDate: formData.get('startDate'),
+        endDate: formData.get('endDate'),
+        ...(imageUrl && { imageUrl })
+      };
+      
+      // Update campaign
+      const response = await fetch(`http://localhost:3000/api/campaigns/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(campaignData)
+      });
+      
+      if (!response.ok) throw new Error('Failed to update campaign');
+      
+      closeEditModal();
+      fetchCampaigns(); // Refresh the table
+      alert('Campaign berhasil diperbarui');
+      
+    } catch (error) {
+      console.error('Error updating campaign:', error);
+      alert('Gagal memperbarui campaign');
+    }
+  }
+
+  async function deleteCampaign(id: string): Promise<void> {
+    selectedCampaignId = id;
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  async function confirmDeleteCampaign(): Promise<void> {
+    if (!selectedCampaignId) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/campaigns/${selectedCampaignId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete campaign');
+
+      closeDeleteModal();
+      fetchCampaigns(); // Refresh the table
+      alert('Campaign berhasil dihapus');
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      alert('Gagal menghapus campaign');
     }
   }
 
@@ -500,10 +859,39 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         updatePagination();
       }
     });
+
+    // Delete confirmation
+    document.getElementById('confirmDelete')?.addEventListener('click', confirmDeleteCampaign);
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+      const viewModal = document.getElementById('viewModal');
+      const editModal = document.getElementById('editModal');
+      const deleteModal = document.getElementById('deleteModal');
+      
+      if (e.target === viewModal) closeViewModal();
+      if (e.target === editModal) closeEditModal();
+      if (e.target === deleteModal) closeDeleteModal();
+    });
   });
+
+  // Declare global functions
+  declare global {
+    interface Window {
+      viewCampaign: (id: string) => Promise<void>;
+      editCampaign: (id: string) => Promise<void>;
+      deleteCampaign: (id: string) => Promise<void>;
+      closeViewModal: () => void;
+      closeEditModal: () => void;
+      closeDeleteModal: () => void;
+    }
+  }
 
   // Make functions globally available
   window.viewCampaign = viewCampaign;
   window.editCampaign = editCampaign;
   window.deleteCampaign = deleteCampaign;
+  window.closeViewModal = closeViewModal;
+  window.closeEditModal = closeEditModal;
+  window.closeDeleteModal = closeDeleteModal;
 </script>
