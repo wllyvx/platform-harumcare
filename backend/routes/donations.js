@@ -6,6 +6,9 @@ const { authenticateToken } = require('../middleware/auth');
 // Create donation (user only)
 router.post('/', authenticateToken, donationController.createDonation);
 
+// Create donation (admin only)
+router.post('/admin', authenticateToken, donationController.createDonationByAdmin);
+
 // Get donations by campaign (public)
 router.get('/campaign/:campaignId', donationController.getDonationsByCampaign);
 

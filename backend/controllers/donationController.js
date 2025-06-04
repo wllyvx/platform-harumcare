@@ -363,3 +363,77 @@ exports.deleteDonation = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Create donation by admin
+exports.createDonationByAdmin = async (req, res) => {
+  try {
+    // Verify admin role
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Akses ditolak. Hanya admin yang dapat mengakses fitur ini.' });
+    }
+
+    const { 
+      campaignId, 
+      amount, 
+      message, 
+      paymentMethod, 
+      donorName,
+      isAnonymous,
+      paymentStatus = 'pending' // Default ke pending, tapi admin bisa set langsung ke completed
+    } = req.body;
+
+    // Validasi input
+    if (!campaignId || !amount || !paymentMethod || !donorName) {
+      return res.status(400).json({ 
+        error: "Campaign ID, jumlah donasi, metode pembayaran, dan nama donatur wajib diisi" 
+      });
+    }
+
+    if (amount < 1000) {
+      return res.status(400).json({ error: "Minimal donasi Rp 1.000" });
+    }
+
+    // Check if campaign exists and still active
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+      return res.status(404).json({ error: "Campaign tidak ditemukan" });
+    }
+
+    if (new Date() > campaign.endDate) {
+      return res.status(400).json({ error: "Campaign sudah berakhir" });
+    }
+
+    // Create donation
+    const donation = new Donation({
+      campaignId,
+      userId: req.user.userId, // Use admin's ID as creator
+      amount,
+      message,
+      paymentMethod,
+      donorName: isAnonymous ? "Hamba Allah" : donorName,
+      isAnonymous,
+      paymentStatus,
+      completedAt: paymentStatus === 'completed' ? new Date() : undefined
+    });
+
+    await donation.save();
+
+    res.status(201).json({
+      message: "Donasi berhasil dibuat",
+      donation: {
+        _id: donation._id,
+        transactionId: donation.transactionId,
+        amount: donation.amount,
+        paymentStatus: donation.paymentStatus,
+        paymentMethod: donation.paymentMethod,
+        donorName: donation.donorName,
+        isAnonymous: donation.isAnonymous,
+        message: donation.message,
+        campaignId: donation.campaignId
+      },
+    });
+  } catch (err) {
+    console.error("Error creating donation by admin:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
