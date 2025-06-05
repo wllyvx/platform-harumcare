@@ -12,8 +12,10 @@ export const prerender = false;
 
 <PrimaryLayout>
   <section class="w-full relative max-w-xl mx-auto py-8">
-    <h1 class="text-3xl font-bold mb-1">Selesaikan Donasi Anda</h1>
-    <p class="mb-6">Transfer ke nomor rekening kami di bawah ini lalu upload bukti transfer</p>
+    <div class="px-8 text-center">
+      <h1 class="text-3xl font-bold mb-1">Selesaikan Donasi Anda</h1>
+      <p class="mb-6">Transfer ke nomor rekening kami di bawah ini lalu upload bukti transfer</p>
+    </div>
     <div id="payment-details" class="bg-white border border-gray-200 p-6 rounded-lg mb-6 hidden">
       <h2 class="text-xl font-semibold mb-4">Detail Pembayaran</h2>
       <div class="mb-4">
@@ -45,15 +47,15 @@ export const prerender = false;
       <p class="text-red-700">Gagal memuat data donasi. Silakan coba lagi atau hubungi admin.</p>
     </div>
 
-    <form id="upload-proof-form" class="space-y-4 hidden" data-donation-id="" data-campaign-id="">
-      <div>
-        <label for="proof-input" class="block text-sm font-medium text-gray-700">Unggah Bukti Transfer</label>
+    <form id="upload-proof-form" class="bg-white rounded-md p-8 space-y-4 hidden border border-gray-200" data-donation-id="" data-campaign-id="">
+      <div class="">
+        <label for="proof-input" class="block text-xl font-semibold">Unggah Bukti Transfer</label>
         <input
           type="file"
           id="proof-input"
           name="proof"
           accept="image/*"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          class="mt-1 p-4 block w-full bg-stone-200 rounded-md border border-dashed border-stone-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           required
         />
         <div id="proof-preview" class="hidden mt-4">
