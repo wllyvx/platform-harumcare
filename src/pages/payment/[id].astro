@@ -31,8 +31,21 @@ export const prerender = false;
           <p id="total-amount" class="bg-green-100 p-4 w-full rounded-md border border-green-300 font-bold text-4xl text-green-500"></p>
           <button class="bg-gray-500 text-white px-2 py-0 rounded-md">Copy</button>
         </div>
+        <p class="text-sm text-gray-500 mt-2">*Sudah termasuk kode unik</p>
       </div>
-      <p class="text-gray-700 mb-2">Kode Unik: <span id="unique-code" class="font-medium"></span></p>
+      <div class="mb-4">
+        <p class="text-gray-700 mb-2">Rincian:</p>
+        <div class="bg-gray-50 p-4 rounded-md">
+          <div class="flex justify-between mb-2">
+            <span>Nominal Donasi</span>
+            <span id="donation-amount" class="font-medium"></span>
+          </div>
+          <div class="flex justify-between">
+            <span>Kode Unik</span>
+            <span id="unique-code" class="font-medium text-blue-600"></span>
+          </div>
+        </div>
+      </div>
       <div class="bg-sky-500/10 border border-sky-400 text-sky-800 py-4 px-2 rounded-md">
         <p class="font-bold text-xl mb-2">Instruksi Transfer:</p>
         <ul class="list-disc px-4">
@@ -84,6 +97,11 @@ export const prerender = false;
     const paymentDetails = document.getElementById("payment-details");
     const uploadForm = document.getElementById("upload-proof-form");
 
+    if (!loading || !error || !paymentDetails || !uploadForm) {
+      console.error("Required DOM elements not found");
+      return;
+    }
+
     loading.classList.remove("hidden");
     paymentDetails.classList.add("hidden");
     error.classList.add("hidden");
@@ -107,7 +125,7 @@ export const prerender = false;
 
       const donation = await response.json();
 
-      const formatCurrency = (amount) => {
+      const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
@@ -115,32 +133,62 @@ export const prerender = false;
           maximumFractionDigits: 0,
         }).format(amount);
       };
-      const uniqueCode = donation.uniqueCode || donation.unique_code || 0;
+
+      const uniqueCode = donation.uniqueCode || 0;
+      const baseAmount = donation.amount - uniqueCode;
       
-      console.log("Donation data:", donation);
-      console.log("Amount:", donation.amount, "Type:", typeof donation.amount);
-      console.log("Unique code:", donation.uniqueCode, "Type:", typeof donation.uniqueCode);
+      const totalAmountElement = document.getElementById("total-amount");
+      const donationAmountElement = document.getElementById("donation-amount");
+      const uniqueCodeElement = document.getElementById("unique-code");
+      const uploadFormElement = document.querySelector("#upload-proof-form");
 
-      const totalAmount = donation.amount + uniqueCode;
-      console.log("Using unique code:", uniqueCode);
-      console.log("Total amount:", totalAmount);
+      if (!totalAmountElement || !donationAmountElement || !uniqueCodeElement || !uploadFormElement) {
+        throw new Error("Required DOM elements for displaying donation details not found");
+      }
 
-      document.getElementById("total-amount").textContent = formatCurrency(totalAmount);
-      document.getElementById("unique-code").textContent = donation.uniqueCode;
-      document.querySelector("#upload-proof-form").setAttribute("data-donation-id", donation._id);
-      document.querySelector("#upload-proof-form").setAttribute("data-campaign-id", donation.campaignId);
+      totalAmountElement.textContent = formatCurrency(donation.amount);
+      donationAmountElement.textContent = formatCurrency(baseAmount);
+      uniqueCodeElement.textContent = uniqueCode.toString();
+      uploadFormElement.setAttribute("data-donation-id", donation._id);
+      uploadFormElement.setAttribute("data-campaign-id", donation.campaignId);
 
       loading.classList.add("hidden");
       paymentDetails.classList.remove("hidden");
       uploadForm.classList.remove("hidden");
-    } catch (error) {
-      console.error("Error fetching donation:", error.message);
+    } catch (error: unknown) {
+      console.error("Error fetching donation:", error instanceof Error ? error.message : "Unknown error");
       loading.classList.add("hidden");
       error.classList.remove("hidden");
     }
   }
 
-  async function uploadImage(file) {
+  function setupImagePreview(inputId: string, previewId: string, imgId: string) {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    const preview = document.getElementById(previewId);
+    const img = document.getElementById(imgId) as HTMLImageElement;
+
+    if (input && preview && img) {
+      input.addEventListener("change", function (e: Event) {
+        const target = e.target as HTMLInputElement;
+        const file = target.files?.[0];
+        
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            if (e.target?.result && typeof e.target.result === 'string') {
+              img.src = e.target.result;
+              preview.classList.remove("hidden");
+            }
+          };
+          reader.readAsDataURL(file);
+        } else {
+          preview.classList.add("hidden");
+        }
+      });
+    }
+  }
+
+  async function uploadImage(file: File) {
     try {
       const formData = new FormData();
       formData.append("image", file);
@@ -160,13 +208,13 @@ export const prerender = false;
 
       const result = await response.json();
       return result.imageUrl;
-    } catch (error) {
-      console.error("Error uploading proof:", error.message);
+    } catch (error: unknown) {
+      console.error("Error uploading proof:", error instanceof Error ? error.message : "Unknown error");
       return null;
     }
   }
 
-  async function updateDonationWithProof(donationId, proofUrl) {
+  async function updateDonationWithProof(donationId: string, proofUrl: string) {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:3000/api/donations/${donationId}/proof`, {
@@ -183,31 +231,9 @@ export const prerender = false;
       }
 
       return await response.json();
-    } catch (error) {
-      console.error("Error updating donation:", error.message);
+    } catch (error: unknown) {
+      console.error("Error updating donation:", error instanceof Error ? error.message : "Unknown error");
       return null;
-    }
-  }
-
-  function setupImagePreview(inputId, previewId, imgId) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    const img = document.getElementById(imgId);
-
-    if (input && preview && img) {
-      input.addEventListener("change", function (e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            img.src = e.target.result;
-            preview.classList.remove("hidden");
-          };
-          reader.readAsDataURL(file);
-        } else {
-          preview.classList.add("hidden");
-        }
-      });
     }
   }
 
@@ -220,16 +246,23 @@ export const prerender = false;
       uploadForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const proofFile = document.querySelector("#proof-input").files[0];
-        const donationId = uploadForm.getAttribute("data-donation-id");
-        const campaignId = uploadForm.getAttribute("data-campaign-id");
-
-        if (!proofFile) {
+        const proofInput = document.querySelector("#proof-input") as HTMLInputElement;
+        const file = proofInput?.files?.[0];
+        
+        if (!file) {
           alert("Harap unggah bukti transfer.");
           return;
         }
 
-        const proofUrl = await uploadImage(proofFile);
+        const donationId = uploadForm.getAttribute("data-donation-id");
+        const campaignId = uploadForm.getAttribute("data-campaign-id");
+
+        if (!donationId || !campaignId) {
+          alert("Data donasi tidak lengkap.");
+          return;
+        }
+
+        const proofUrl = await uploadImage(file);
         if (!proofUrl) {
           alert("Gagal mengunggah bukti transfer. Coba lagi.");
           return;

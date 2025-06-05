@@ -282,7 +282,7 @@ const formatDate = (dateString: string) => {
 
 <script>
   const generateUniqueCode = () => {
-    return Math.floor(1000 + Math.random() * 9000); // Kode unik 4 digit
+    return Math.floor(100 + Math.random() * 900); // Kode unik 3 digit (100-999)
   };
 
   async function initiatePayment(
@@ -299,6 +299,8 @@ const formatDate = (dateString: string) => {
 
     try {
       const uniqueCode = generateUniqueCode();
+      const totalAmount = amount + uniqueCode; // Menambahkan kode unik ke nominal donasi
+      
       const response = await fetch(
         `http://localhost:3000/api/donations`,
         {
@@ -309,7 +311,7 @@ const formatDate = (dateString: string) => {
           },
           body: JSON.stringify({
             campaignId,
-            amount,
+            amount: totalAmount, // Menggunakan total amount yang sudah termasuk kode unik
             paymentMethod,
             donorName: donorName || "Anonymous",
             isAnonymous: !donorName,
