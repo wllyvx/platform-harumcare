@@ -1,5 +1,76 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+
+// Type definitions
+interface User {
+  nama: string;
+  email: string;
+  role: string;
+}
+
+interface CampaignStats {
+  totalCampaigns: number;
+  totalDonations: number;
+}
+
+interface Donation {
+  _id: string;
+  amount: number;
+  paymentStatus: 'completed' | 'pending' | 'failed';
+  createdAt: string;
+  completedAt?: string;
+}
+
+interface DonationStats {
+  completedCount: number;
+  pendingCount: number;
+  failedCount: number;
+  totalAmount: number;
+}
+
+// Fetch dashboard data
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
+const fetchDashboardData = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    const [usersRes, campaignsRes, donationsRes] = await Promise.all([
+      fetch(`${API_URL}/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch(`${API_URL}/campaigns/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch(`${API_URL}/donations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+    ]);
+
+    const [users, campaignStats, donationsData] = await Promise.all([
+      usersRes.json(),
+      campaignsRes.json(),
+      donationsRes.json()
+    ]);
+
+    // Calculate donation stats
+    const donations: Donation[] = donationsData.donations || [];
+    const completed = donations.filter((d: Donation) => d.paymentStatus === 'completed');
+    const totalAmount = completed.reduce((sum: number, d: Donation) => sum + d.amount, 0);
+
+    return {
+      totalUsers: users.length,
+      totalCampaigns: campaignStats.totalCampaigns,
+      totalDonations: totalAmount
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    return null;
+  }
+};
+
+let dashboardData = null;
 ---
 
 <AdminLayout title="Dashboard">
@@ -10,7 +81,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <!-- Total Users -->
     <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
       <div class="flex items-center">
@@ -23,11 +94,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
         <div class="ml-4">
           <p class="text-sm font-medium text-gray-600">Total Users</p>
-          <p class="text-2xl font-semibold text-gray-900">1,234</p>
+          <p class="text-2xl font-semibold text-gray-900" id="totalUsers">-</p>
+          <a href="/admin/users" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            Lihat semua users →
+          </a>
         </div>
-      </div>
-      <div class="mt-4">
-        <span class="text-sm text-green-600 font-medium">+12% dari bulan lalu</span>
       </div>
     </div>
 
@@ -43,11 +114,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
         <div class="ml-4">
           <p class="text-sm font-medium text-gray-600">Total Campaigns</p>
-          <p class="text-2xl font-semibold text-gray-900">87</p>
+          <p class="text-2xl font-semibold text-gray-900" id="totalCampaigns">-</p>
+          <a href="/admin/campaign" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            Lihat semua campaign →
+          </a>
         </div>
-      </div>
-      <div class="mt-4">
-        <span class="text-sm text-green-600 font-medium">+8% dari bulan lalu</span>
       </div>
     </div>
 
@@ -63,134 +134,82 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
         <div class="ml-4">
           <p class="text-sm font-medium text-gray-600">Total Donasi</p>
-          <p class="text-2xl font-semibold text-gray-900">Rp 2.1M</p>
-        </div>
-      </div>
-      <div class="mt-4">
-        <span class="text-sm text-green-600 font-medium">+15% dari bulan lalu</span>
-      </div>
-    </div>
-
-    <!-- Active Campaigns -->
-    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-      <div class="flex items-center">
-        <div class="flex-shrink-0">
-          <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-          </div>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Campaign Aktif</p>
-          <p class="text-2xl font-semibold text-gray-900">23</p>
-        </div>
-      </div>
-      <div class="mt-4">
-        <span class="text-sm text-blue-600 font-medium">5 menunggu persetujuan</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent Activity -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Recent Donations -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Donasi Terbaru</h3>
-      </div>
-      <div class="p-6">
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                <span class="text-sm font-medium text-gray-700">JD</span>
-              </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">John Doe</p>
-                <p class="text-sm text-gray-500">Donasi untuk Bantuan Bencana</p>
-              </div>
-            </div>
-            <span class="text-sm font-semibold text-green-600">Rp 500,000</span>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                <span class="text-sm font-medium text-gray-700">SA</span>
-              </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">Sarah Ahmad</p>
-                <p class="text-sm text-gray-500">Donasi untuk Pendidikan Anak</p>
-              </div>
-            </div>
-            <span class="text-sm font-semibold text-green-600">Rp 250,000</span>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                <span class="text-sm font-medium text-gray-700">BR</span>
-              </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">Budi Rahman</p>
-                <p class="text-sm text-gray-500">Donasi untuk Kesehatan</p>
-              </div>
-            </div>
-            <span class="text-sm font-semibold text-green-600">Rp 1,000,000</span>
-          </div>
-        </div>
-        
-        <div class="mt-6">
+          <p class="text-2xl font-semibold text-gray-900" id="totalDonations">-</p>
           <a href="/admin/donation" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
             Lihat semua donasi →
           </a>
         </div>
       </div>
     </div>
-
-    <!-- Recent Campaigns -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Campaign Terbaru</h3>
-      </div>
-      <div class="p-6">
-        <div class="space-y-4">
-          <div class="border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-sm font-semibold text-gray-900">Bantuan Korban Banjir Jakarta</h4>
-              <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                Aktif
-              </span>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">Target: Rp 10,000,000</p>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">65% tercapai</p>
-          </div>
-          
-          <div class="border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-sm font-semibold text-gray-900">Pendidikan Anak Yatim</h4>
-              <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                Pending
-              </span>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">Target: Rp 5,000,000</p>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">Menunggu persetujuan</p>
-          </div>
-        </div>
-        
-        <div class="mt-6">
-          <a href="/admin/campaign" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-            Lihat semua campaign →
-          </a>
-        </div>
-      </div>
-    </div>
   </div>
 </AdminLayout>
+
+<script>
+  interface Donation {
+    _id: string;
+    amount: number;
+    paymentStatus: 'completed' | 'pending' | 'failed';
+    createdAt: string;
+    completedAt?: string;
+  }
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const updateDashboard = async () => {
+    try {
+      const API_URL = import.meta.env.PUBLIC_API_URL;
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const [usersRes, campaignsRes, donationsRes] = await Promise.all([
+        fetch(`${API_URL}/users`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/campaigns/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/donations`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
+
+      const [users, campaignStats, donationsData] = await Promise.all([
+        usersRes.json(),
+        campaignsRes.json(),
+        donationsRes.json()
+      ]);
+
+      // Calculate total amount from completed donations
+      const donations: Donation[] = donationsData.donations || [];
+      const completed = donations.filter((d: Donation) => d.paymentStatus === 'completed');
+      const totalAmount = completed.reduce((sum: number, d: Donation) => sum + d.amount, 0);
+
+      // Update stats
+      const totalUsersElement = document.getElementById('totalUsers');
+      const totalCampaignsElement = document.getElementById('totalCampaigns');
+      const totalDonationsElement = document.getElementById('totalDonations');
+      
+      if (totalUsersElement && totalCampaignsElement && totalDonationsElement) {
+        totalUsersElement.textContent = users.length.toString();
+        totalCampaignsElement.textContent = campaignStats.totalCampaigns.toString();
+        totalDonationsElement.textContent = formatCurrency(totalAmount);
+      }
+    } catch (error) {
+      console.error('Error updating dashboard:', error);
+    }
+  };
+
+  // Update dashboard when page loads
+  document.addEventListener('DOMContentLoaded', updateDashboard);
+</script>
