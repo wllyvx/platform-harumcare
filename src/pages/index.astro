@@ -3,10 +3,13 @@ import PrimaryLayout from "../layouts/PrimaryLayout.astro";
 import Campaign from "../components/campaign/Campaign.astro";
 import Hero from "../components/home/Hero.astro";
 
+
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // Fungsi fetch campaigns (di frontmatter, server-side)
 async function fetchCampaigns() {
   try {
-    const response = await fetch('http://localhost:3000/api/campaigns');
+    const response = await fetch(`${API_URL}/campaigns`);
     if (!response.ok) {
       throw new Error('Failed to fetch campaigns');
     }

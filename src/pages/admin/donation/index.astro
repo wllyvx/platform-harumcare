@@ -516,6 +516,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
   const resetFilters = document.getElementById("resetFilters");
   const retryButton = document.getElementById("retryButton");
 
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+
   // Utility functions
   function formatCurrency(amount) {
     return new Intl.NumberFormat("id-ID", {
@@ -590,8 +592,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
       // Fetch donations and campaigns simultaneously
       const [donationsResponse, campaignsResponse] = await Promise.all([
-        authenticatedFetch("http://localhost:3000/api/donations"),
-        authenticatedFetch("http://localhost:3000/api/campaigns"),
+        authenticatedFetch(`${API_URL}/donations`),
+        authenticatedFetch(`${API_URL}/campaigns`),
       ]);
 
       // Handle authentication errors
@@ -985,7 +987,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
           };
 
           const authenticatedFetch = createAuthenticatedFetch();
-          const response = await authenticatedFetch("http://localhost:3000/api/donations/admin", {
+          const response = await authenticatedFetch(`${API_URL}/donations/admin`, {
             method: "POST",
             body: JSON.stringify(data)
           });
@@ -1055,7 +1057,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     try {
       const authenticatedFetch = createAuthenticatedFetch();
       const response = await authenticatedFetch(
-        `http://localhost:3000/api/donations/${donationId}/status`,
+        `${API_URL}/donations/${donationId}/status`,
         {
           method: "PATCH",
           body: JSON.stringify({ paymentStatus: newStatus }),
@@ -1087,7 +1089,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     try {
       const authenticatedFetch = createAuthenticatedFetch();
       const response = await authenticatedFetch(
-        `http://localhost:3000/api/donations/${donationId}`,
+        `${API_URL}/donations/${donationId}`,
         {
           method: "DELETE",
         }

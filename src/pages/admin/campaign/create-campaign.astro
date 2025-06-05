@@ -132,6 +132,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
 </AdminLayout>
 
 <script>
+  const API_URL = import.meta.env.PUBLIC_API_URL;
   // Fungsi untuk upload gambar ke server
   async function uploadImage(file) {
     try {
@@ -139,7 +140,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
       formData.append('image', file);
       
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/upload', {
+      const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -163,7 +164,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
   async function createCampaign(data) {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/campaigns', {
+      const response = await fetch(`${API_URL}/campaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

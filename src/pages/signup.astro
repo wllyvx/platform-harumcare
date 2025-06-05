@@ -95,6 +95,8 @@ import AuthLayout from "../layouts/AuthLayout.astro";
 const form = document.getElementById('signupForm') as HTMLFormElement;
 const passwordInput = document.getElementById('password') as HTMLInputElement;
 const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 
 if (form && passwordInput && confirmPasswordInput) {
     form.addEventListener('submit', async (e) => {
@@ -110,7 +112,7 @@ if (form && passwordInput && confirmPasswordInput) {
         const data = Object.fromEntries(formData);
         
         try {
-            const response = await fetch('http://localhost:3000/api/auth/register', {
+            const response = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -317,6 +317,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
   let filteredCampaigns: Campaign[] = [];
   let currentPage = 1;
   const itemsPerPage = 10;
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+
 
   // DOM elements
   const loadingState = document.getElementById('loadingState');
@@ -405,7 +407,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
   async function fetchCampaigns() {
     try {
       showLoading();
-      const response = await fetch('http://localhost:3000/api/campaigns');
+      const response = await fetch(`${API_URL}/campaigns`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -641,7 +643,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
 
   async function viewCampaign(id: string): Promise<void> {
     try {
-      const response = await fetch(`http://localhost:3000/api/campaigns/${id}`);
+      const response = await fetch(`${API_URL}/campaigns/${id}`);
       if (!response.ok) throw new Error('Failed to fetch campaign details');
       
       const campaign: Campaign = await response.json();
@@ -696,7 +698,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
 
   async function editCampaign(id: string): Promise<void> {
     try {
-      const response = await fetch(`http://localhost:3000/api/campaigns/${id}`);
+      const response = await fetch(`${API_URL}/campaigns/${id}`);
       if (!response.ok) throw new Error('Failed to fetch campaign details');
       
       const campaign: Campaign = await response.json();
@@ -747,7 +749,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         const imageFormData = new FormData();
         imageFormData.append('image', imageFile);
         
-        const uploadResponse = await fetch('http://localhost:3000/api/upload', {
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -772,7 +774,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
       };
       
       // Update campaign
-      const response = await fetch(`http://localhost:3000/api/campaigns/${id}`, {
+      const response = await fetch(`${API_URL}/campaigns/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -803,7 +805,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     if (!selectedCampaignId) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/campaigns/${selectedCampaignId}`, {
+      const response = await fetch(`${API_URL}/campaigns/${selectedCampaignId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

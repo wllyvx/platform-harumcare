@@ -3,14 +3,17 @@ import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
 import type { ObjectId } from "mongoose";
 
 // Ekspor getStaticPaths
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
+
 export async function getStaticPaths() {
   console.log("Starting getStaticPaths execution...");
 
   try {
     console.log(
-      "Attempting to fetch campaign list from http://localhost:3000/api/campaigns..."
+      "Attempting to fetch campaign list from ${API_URL}/campaigns..."
     );
-    const response = await fetch("http://localhost:3000/api/campaigns");
+    const response = await fetch(`${API_URL}/campaigns`);
 
     if (!response.ok) {
       throw new Error(
@@ -281,6 +284,8 @@ const formatDate = (dateString: string) => {
 </PrimaryLayout>
 
 <script>
+
+  const API_URL = import.meta.env.PUBLIC_API_URL;
   const generateUniqueCode = () => {
     return Math.floor(100 + Math.random() * 900); // Kode unik 3 digit (100-999)
   };
@@ -302,7 +307,7 @@ const formatDate = (dateString: string) => {
       const totalAmount = amount + uniqueCode; // Menambahkan kode unik ke nominal donasi
       
       const response = await fetch(
-        `http://localhost:3000/api/donations`,
+        `${API_URL}/donations`,
         {
           method: "POST",
           headers: {
