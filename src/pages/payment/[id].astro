@@ -21,15 +21,15 @@ export const prerender = false;
       <div class="mb-4">
         <p class="text-gray-700 mb-2">Nomor Rekening:</p>
         <div class="flex gap-5">
-          <p class="rounded-md bg-gray-100 border border-gray-200 p-4 w-full font-medium text-2xl">{bankAccount}</p>          
-          <button class="bg-gray-500 text-white px-2 py-0 rounded-md">Copy</button>
+          <p id="account-number" class="rounded-md bg-gray-100 border border-gray-200 p-4 w-full font-medium text-2xl">{bankAccount}</p>          
+          <button id="copy-account" class="bg-gray-500 text-white px-2 py-0 rounded-md hover:bg-gray-600 transition-colors duration-200">Copy</button>
         </div>
       </div>
       <div class="mb-4">
         <p class="text-gray-700 mb-2">Jumlah Transfer:</p>
         <div class="flex justify-between gap-5">
           <p id="total-amount" class="bg-green-100 p-4 w-full rounded-md border border-green-300 font-bold text-4xl text-green-500"></p>
-          <button class="bg-gray-500 text-white px-2 py-0 rounded-md">Copy</button>
+          <button id="copy-amount" class="bg-gray-500 text-white px-2 py-0 rounded-md hover:bg-gray-600 transition">Copy</button>
         </div>
         <p class="text-sm text-gray-500 mt-2">*Sudah termasuk kode unik</p>
       </div>
@@ -91,6 +91,9 @@ export const prerender = false;
   const transactionId = url.pathname.split('/').pop();
   console.log("Fetching donation with transactionId:", transactionId);
 
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+
+
   async function fetchDonation() {
     const loading = document.getElementById("loading");
     const error = document.getElementById("error");
@@ -113,7 +116,7 @@ export const prerender = false;
         throw new Error("Token autentikasi tidak ditemukan. Silakan login.");
       }
 
-      const response = await fetch(`http://localhost:3000/api/donations/transaction/${transactionId}`, {
+      const response = await fetch(`${API_URL}/donations/transaction/${transactionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -194,7 +197,7 @@ export const prerender = false;
       formData.append("image", file);
 
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/upload", {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -217,7 +220,7 @@ export const prerender = false;
   async function updateDonationWithProof(donationId: string, proofUrl: string) {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3000/api/donations/${donationId}/proof`, {
+      const response = await fetch(`${API_URL}/donations/${donationId}/proof`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -240,6 +243,45 @@ export const prerender = false;
   window.addEventListener("load", () => {
     fetchDonation();
     setupImagePreview("proof-input", "proof-preview", "preview-proof");
+
+    // Setup copy buttons
+    const copyAccount = document.getElementById("copy-account");
+    const copyAmount = document.getElementById("copy-amount");
+    const accountNumber = document.getElementById("account-number");
+    const totalAmount = document.getElementById("total-amount");
+
+    async function copyToClipboard(text: string, button: HTMLButtonElement) {
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = button.textContent;
+        button.textContent = "Tersalin!";
+        button.classList.remove("bg-gray-500");
+        button.classList.add("bg-green-500", "hover:bg-green-500");
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove("bg-green-500", "hover:bg-green-500");
+          button.classList.add("bg-gray-500");
+        }, 2000);
+      } catch (err) {
+        console.error("Gagal menyalin teks:", err);
+        alert("Gagal menyalin teks. Silakan coba lagi.");
+      }
+    }
+
+    copyAccount?.addEventListener("click", () => {
+      if (accountNumber) {
+        copyToClipboard(accountNumber.textContent || "", copyAccount as HTMLButtonElement);
+      }
+    });
+
+    copyAmount?.addEventListener("click", () => {
+      if (totalAmount) {
+        // Hapus format mata uang sebelum menyalin
+        const amount = totalAmount.textContent?.replace(/[^0-9]/g, "") || "";
+        copyToClipboard(amount, copyAmount as HTMLButtonElement);
+      }
+    });
 
     const uploadForm = document.querySelector("#upload-proof-form");
     if (uploadForm) {
