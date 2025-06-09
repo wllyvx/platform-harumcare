@@ -3,10 +3,10 @@ import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
 import type { ObjectId } from "mongoose";
 
 // Ekspor getStaticPaths
-const API_URL = import.meta.env.PUBLIC_API_URL;
 
 
 export async function getStaticPaths() {
+  const API_URL = import.meta.env.PUBLIC_API_URL;
   console.log("Starting getStaticPaths execution...");
 
   try {
