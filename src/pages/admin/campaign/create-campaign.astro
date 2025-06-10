@@ -109,14 +109,25 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
             <option value="">Pilih Kategori</option>
-            <option value="health">Health</option>
-            <option value="education">Education</option>
-            <option value="environment">Environment</option>
-            <option value="disaster">Disaster Relief</option>
-            <option value="poverty">Poverty</option>
-            <option value="animals">Animals</option>
-            <option value="other">Other</option>
+            <option value="kesehatan">Kesehatan</option>
+            <option value="pendidikan">Pendidikan</option>
+            <option value="lingkungan">Lingkungan</option>
+            <option value="bencana">Bencana Alam</option>
+            <option value="kemiskinan">Kemiskinan</option>
+            <option value="anak">Anak-anak</option>
+            <option value="lansia">Lansia</option>
+            <option value="difabel">Difabel</option>
+            <option value="hewan">Hewan</option>
+            <option value="new">+ Tambah Kategori Baru</option>
           </select>
+          <div id="new-category-input" class="mt-4 hidden">
+            <input
+              type="text"
+              id="custom-category"
+              placeholder="Masukkan nama kategori baru"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+          </div>
         </div>
         <button
           type="submit"
@@ -206,6 +217,25 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     }
   }
 
+  // Setup category input handling
+  function setupCategoryInput() {
+    const categorySelect = document.getElementById('category-input');
+    const newCategoryDiv = document.getElementById('new-category-input');
+    const customCategoryInput = document.getElementById('custom-category');
+
+    if (categorySelect && newCategoryDiv && customCategoryInput) {
+      categorySelect.addEventListener('change', function() {
+        if (this.value === 'new') {
+          newCategoryDiv.classList.remove('hidden');
+          customCategoryInput.setAttribute('required', 'required');
+        } else {
+          newCategoryDiv.classList.add('hidden');
+          customCategoryInput.removeAttribute('required');
+        }
+      });
+    }
+  }
+
   // Periksa role dan tampilkan form hanya untuk admin
   window.addEventListener('load', () => {
     const createSection = document.querySelector('#create-section');
@@ -226,6 +256,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     // Setup image previews
     setupImagePreview('image-input', 'image-preview', 'preview-img');
     setupImagePreview('organizationLogo-input', 'logo-preview', 'preview-logo');
+    // Setup category input
+    setupCategoryInput();
 
     const createForm = document.querySelector('#create-campaign-form');
     if (createForm) {
@@ -265,6 +297,18 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
               throw new Error('Failed to upload organization logo');
             }
           }
+
+          // Handle custom category
+          const categorySelect = document.getElementById('category-input');
+          const customCategoryInput = document.getElementById('custom-category');
+          let category = categorySelect.value;
+          
+          if (category === 'new' && customCategoryInput) {
+            category = customCategoryInput.value.trim().toLowerCase();
+            if (!category) {
+              throw new Error('Nama kategori baru harus diisi');
+            }
+          }
           
           const formData = {
             title: document.querySelector('#title-input').value,
@@ -277,7 +321,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
             donorCount: 0,
             organizationName: document.querySelector('#organizationName-input').value,
             organizationLogo: organizationLogo,
-            category: document.querySelector('#category-input').value,
+            category: category,
           };
           
           console.log('Sending create campaign request with:', formData);
