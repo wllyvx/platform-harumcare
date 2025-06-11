@@ -1,0 +1,132 @@
+---
+import type { ObjectId } from 'mongoose';
+import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
+import Card from "../../components/common/Card.astro";
+
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
+// Interface untuk data campaign
+interface Campaign {
+  _id: ObjectId;
+  title: string;
+  description: string;
+  imageUrl: string;
+  targetAmount: number;
+  currentAmount: number;
+  endDate: string;
+  donorCount: number;
+  organizationName: string;
+  organizationLogo: string;
+  category: string;
+  daysLeft?: number;
+}
+
+interface CampaignResponse {
+  campaigns: Campaign[];
+  totalPages: number;
+  currentPage: number;
+  total: number;
+}
+
+// Fungsi fetch campaigns dengan pagination
+async function fetchCampaigns(page = 1, limit = 12): Promise<CampaignResponse> {
+  try {
+    const response = await fetch(`${API_URL}/campaigns?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch campaigns');
+    }
+    const data = await response.json();
+    
+    return {
+      campaigns: data.campaigns || [],
+      totalPages: data.totalPages || 1,
+      currentPage: data.currentPage || 1,
+      total: data.total || 0
+    };
+    
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    return {
+      campaigns: [],
+      totalPages: 1,
+      currentPage: 1,
+      total: 0
+    };
+  }
+}
+
+const campaignData = await fetchCampaigns();
+
+// Hitung sisa hari untuk setiap campaign
+const today = new Date();
+const campaignsWithDaysLeft = campaignData.campaigns.map((campaign: Campaign) => {
+  const endDate = new Date(campaign.endDate);
+  const timeDiff = endDate.getTime() - today.getTime();
+  const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  return { ...campaign, daysLeft: daysLeft >= 0 ? daysLeft : 0 };
+});
+---
+
+
+<PrimaryLayout>
+  <section class="campaign-section relative px-4 py-8 md:py-16">
+    <div class="campaign-container max-w-7xl mx-auto">
+      <!-- Header Section -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Semua Kampanye</h1>
+        <p class="text-gray-600 max-w-2xl mx-auto">
+          Temukan dan dukung berbagai kampanye yang membutuhkan bantuan Anda. Setiap donasi membawa perubahan berarti bagi mereka yang membutuhkan.
+        </p>
+      </div>
+
+      <!-- Campaign Cards -->
+      {campaignsWithDaysLeft.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 place-content-center">
+          {campaignsWithDaysLeft.map((campaign) => (
+            <Card
+              _id={campaign._id}
+              title={campaign.title || 'Untitled'}
+              description={campaign.description || 'Tidak ada Deskripsi'}
+              imageUrl={campaign.imageUrl}
+              targetAmount={campaign.targetAmount}
+              currentAmount={campaign.currentAmount || 0}
+              daysLeft={campaign.daysLeft || 0}
+              donorCount={campaign.donorCount || 0}
+              organizationName={campaign.organizationName || 'Anonymous'}
+              organizationLogo={campaign.organizationLogo}
+              category={campaign.category || 'Tidak Berkategori'}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12">
+          <p class="text-gray-500">Tidak ada kampanye yang tersedia saat ini.</p>
+        </div>
+      )}
+
+      <!-- Pagination -->
+      {campaignData.totalPages > 1 && (
+        <div class="flex justify-center mt-12 space-x-2">
+          {Array.from({ length: campaignData.totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <a
+              href={`/campaign?page=${pageNum}`}
+              class={`px-4 py-2 rounded-lg ${
+                pageNum === campaignData.currentPage
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {pageNum}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</PrimaryLayout>
+
+<style>
+  .campaign-section {
+    background-color: #f9fafb;
+  }
+</style>

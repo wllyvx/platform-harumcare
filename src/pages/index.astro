@@ -1,12 +1,12 @@
 ---
 import PrimaryLayout from "../layouts/PrimaryLayout.astro";
-import Campaign from "../components/campaign/Campaign.astro";
+import LatestCampaign from "../components/campaign/LatestCampaign.astro";
 import Hero from "../components/home/Hero.astro";
 
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
-// Fungsi fetch campaigns (di frontmatter, server-side)
+// fetch campaigns
 async function fetchCampaigns() {
   try {
     const response = await fetch(`${API_URL}/campaigns`);
@@ -38,7 +38,7 @@ const campaignData = await fetchCampaigns();
 
 <PrimaryLayout>
   <Hero />
-  <Campaign
+  <LatestCampaign
     campaigns={campaignData.campaigns}
   />
 </PrimaryLayout>
