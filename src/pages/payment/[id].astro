@@ -33,19 +33,6 @@ export const prerender = false;
         </div>
         <p class="text-sm text-gray-500 mt-2">*Sudah termasuk kode unik</p>
       </div>
-      <div class="mb-4">
-        <p class="text-gray-700 mb-2">Rincian:</p>
-        <div class="bg-gray-50 p-4 rounded-md">
-          <div class="flex justify-between mb-2">
-            <span>Nominal Donasi</span>
-            <span id="donation-amount" class="font-medium"></span>
-          </div>
-          <div class="flex justify-between">
-            <span>Kode Unik</span>
-            <span id="unique-code" class="font-medium text-blue-600"></span>
-          </div>
-        </div>
-      </div>
       <div class="bg-sky-500/10 border border-sky-400 text-sky-800 py-4 px-2 rounded-md">
         <p class="font-bold text-xl mb-2">Instruksi Transfer:</p>
         <ul class="list-disc px-4">
@@ -141,17 +128,13 @@ export const prerender = false;
       const baseAmount = donation.amount - uniqueCode;
       
       const totalAmountElement = document.getElementById("total-amount");
-      const donationAmountElement = document.getElementById("donation-amount");
-      const uniqueCodeElement = document.getElementById("unique-code");
       const uploadFormElement = document.querySelector("#upload-proof-form");
 
-      if (!totalAmountElement || !donationAmountElement || !uniqueCodeElement || !uploadFormElement) {
+      if (!totalAmountElement || !uploadFormElement) {
         throw new Error("Required DOM elements for displaying donation details not found");
       }
 
       totalAmountElement.textContent = formatCurrency(donation.amount);
-      donationAmountElement.textContent = formatCurrency(baseAmount);
-      uniqueCodeElement.textContent = uniqueCode.toString();
       uploadFormElement.setAttribute("data-donation-id", donation._id);
       uploadFormElement.setAttribute("data-campaign-id", donation.campaignId);
 
