@@ -34,7 +34,7 @@
         </button>
       </form>
       <div class="text-center mt-8">
-        <p>Belum punya akun? <span class="font-bold text-blue-400"><a href="/signup">Daftar</a></span></p>
+        <p>Belum punya akun? <span class="font-bold text-blue-400"><a href="/auth/signup">Daftar</a></span></p>
       </div>
     </div>
 
@@ -43,11 +43,13 @@
       username: string;
       password: string;
     }
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+
   
     // Fungsi login
     async function loginUser(data: LoginData) {
       try {
-        const response = await fetch('http://localhost:3000/api/auth/login', {
+        const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
