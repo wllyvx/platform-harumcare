@@ -1,11 +1,10 @@
 ---
 import type { ObjectId } from 'mongoose';
 import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
-import Card from "../../components/common/Card.astro";
+import AllCampaign from "../../components/campaign/AllCampaign.astro";
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
-// Interface untuk data campaign
 interface Campaign {
   _id: ObjectId;
   title: string;
@@ -18,7 +17,6 @@ interface Campaign {
   organizationName: string;
   organizationLogo: string;
   category: string;
-  daysLeft?: number;
 }
 
 interface CampaignResponse {
@@ -28,10 +26,34 @@ interface CampaignResponse {
   total: number;
 }
 
-// Fungsi fetch campaigns dengan pagination
-async function fetchCampaigns(page = 1, limit = 12): Promise<CampaignResponse> {
+// Ambil parameter dari URL
+const { searchParams } = Astro.url;
+const page = Number(searchParams.get('page')) || 1;
+const search = searchParams.get('search') || '';
+const category = searchParams.get('category') || '';
+
+// Fungsi fetch campaigns dengan pagination dan filter
+async function fetchCampaigns(page = 1, limit = 12, search = '', category = ''): Promise<CampaignResponse> {
   try {
-    const response = await fetch(`${API_URL}/campaigns?page=${page}&limit=${limit}`);
+    // Buat query string untuk filter
+    const params = new URLSearchParams();
+    
+    // Tambahkan parameter wajib
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    // Tambahkan parameter filter jika ada
+    if (search && search.trim() !== '') {
+      params.append('search', search.trim());
+    }
+    if (category && category.trim() !== '') {
+      params.append('category', category.trim());
+    }
+
+    // Buat URL dengan query string
+    const url = `${API_URL}/campaigns?${params.toString()}`;
+
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch campaigns');
     }
@@ -55,74 +77,22 @@ async function fetchCampaigns(page = 1, limit = 12): Promise<CampaignResponse> {
   }
 }
 
-const campaignData = await fetchCampaigns();
+// Fetch data dengan parameter yang ada
+const campaignData = await fetchCampaigns(page, 12, search, category);
 
-// Hitung sisa hari untuk setiap campaign
-const today = new Date();
-const campaignsWithDaysLeft = campaignData.campaigns.map((campaign: Campaign) => {
-  const endDate = new Date(campaign.endDate);
-  const timeDiff = endDate.getTime() - today.getTime();
-  const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  return { ...campaign, daysLeft: daysLeft >= 0 ? daysLeft : 0 };
-});
+// Dapatkan daftar kategori unik dari data campaign
+const categories = [...new Set(campaignData.campaigns.map(campaign => campaign.category))].filter(Boolean).sort();
 ---
 
-
 <PrimaryLayout>
-  <section class="campaign-section relative px-4 py-8 md:py-16">
-    <div class="campaign-container max-w-7xl mx-auto">
-      <!-- Header Section -->
-      <div class="text-center mb-12">
-        <h1 class="text-4xl font-bold text-gray-800 mb-4">Semua Kampanye</h1>
-        <p class="text-gray-600 max-w-2xl mx-auto">
-          Temukan dan dukung berbagai kampanye yang membutuhkan bantuan Anda. Setiap donasi membawa perubahan berarti bagi mereka yang membutuhkan.
-        </p>
-      </div>
-
-      <!-- Campaign Cards -->
-      {campaignsWithDaysLeft.length > 0 ? (
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 place-content-center">
-          {campaignsWithDaysLeft.map((campaign) => (
-            <Card
-              _id={campaign._id}
-              title={campaign.title || 'Untitled'}
-              description={campaign.description || 'Tidak ada Deskripsi'}
-              imageUrl={campaign.imageUrl}
-              targetAmount={campaign.targetAmount}
-              currentAmount={campaign.currentAmount || 0}
-              daysLeft={campaign.daysLeft || 0}
-              donorCount={campaign.donorCount || 0}
-              organizationName={campaign.organizationName || 'Anonymous'}
-              organizationLogo={campaign.organizationLogo}
-              category={campaign.category || 'Tidak Berkategori'}
-            />
-          ))}
-        </div>
-      ) : (
-        <div class="text-center py-12">
-          <p class="text-gray-500">Tidak ada kampanye yang tersedia saat ini.</p>
-        </div>
-      )}
-
-      <!-- Pagination -->
-      {campaignData.totalPages > 1 && (
-        <div class="flex justify-center mt-12 space-x-2">
-          {Array.from({ length: campaignData.totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <a
-              href={`/campaign?page=${pageNum}`}
-              class={`px-4 py-2 rounded-lg ${
-                pageNum === campaignData.currentPage
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {pageNum}
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
-  </section>
+  <AllCampaign
+    campaigns={campaignData.campaigns}
+    totalPages={campaignData.totalPages}
+    currentPage={campaignData.currentPage}
+    categories={categories}
+    activeCategory={category}
+    searchQuery={search}
+  />
 </PrimaryLayout>
 
 <style>
