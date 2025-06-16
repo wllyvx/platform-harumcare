@@ -18,8 +18,15 @@ dotenv.config();
 
 const app = express();
 
-// middleware
-app.use(cors());
+// Konfigurasi CORS
+const corsOptions = {
+  origin: ['https://*.vercel.app', 'http://localhost:3000', 'http://localhost:4321'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
