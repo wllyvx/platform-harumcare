@@ -1,0 +1,706 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro"
+---
+
+<AdminLayout title="Kelola Berita">
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="mt-4 sm:mt-0">
+        <a href="/admin/news/create-news">
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+            + Tambah Berita
+          </button>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Cari Berita</label>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Cari berdasarkan judul..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+        <select
+          id="categoryFilter"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Semua Kategori</option>
+          <option value="umum">Umum</option>
+          <option value="kegiatan">Kegiatan</option>
+          <option value="pengumuman">Pengumuman</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <select
+          id="statusFilter"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Semua Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button
+          id="resetFilters"
+          class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+        >
+          Reset Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+    <p class="text-gray-600">Memuat data berita...</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center hidden">
+    <div class="text-red-500 mb-4">
+      <svg class="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 1118 0z"></path>
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Gagal Memuat Data</h3>
+    <p class="text-gray-600 mb-4">Terjadi kesalahan saat mengambil data berita.</p>
+    <button
+      id="retryButton"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+    >
+      Coba Lagi
+    </button>
+  </div>
+
+  <!-- News Table -->
+  <div id="newsTable" class="bg-white rounded-lg shadow-sm border border-gray-200 hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Daftar Berita</h3>
+      <p class="text-sm text-gray-600 mt-1">Total: <span id="totalNews">0</span> berita</p>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berita</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="newsTableBody" class="bg-white divide-y divide-gray-200">
+          <!-- News rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="px-6 py-4 border-t border-gray-200">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Menampilkan <span id="showingFrom">1</span> - <span id="showingTo">10</span> dari <span id="totalItems">0</span> berita
+        </div>
+        <div class="flex space-x-2">
+          <button
+            id="prevPage"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+          >
+            Sebelumnya
+          </button>
+          <div id="pageNumbers" class="flex space-x-1">
+            <!-- Page numbers will be inserted here -->
+          </div>
+          <button
+            id="nextPage"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Selanjutnya
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit Modal -->
+  <div id="newsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Tambah Berita</h3>
+        <button onclick="closeNewsModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="newsForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Judul Berita</label>
+          <input
+            type="text"
+            id="newsTitle"
+            name="title"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Konten</label>
+          <textarea
+            id="newsContent"
+            name="content"
+            rows="6"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          ></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+            <select
+              id="newsCategory"
+              name="category"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="">Pilih Kategori</option>
+              <option value="umum">Umum</option>
+              <option value="kegiatan">Kegiatan</option>
+              <option value="pengumuman">Pengumuman</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              id="newsStatus"
+              name="status"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Gambar Berita</label>
+          <input
+            type="file"
+            id="newsImage"
+            name="image"
+            accept="image/*"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p class="text-sm text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah gambar</p>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            type="button"
+            onclick="closeNewsModal()"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3 text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+          <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Hapus Berita</h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500">
+            Apakah Anda yakin ingin menghapus berita ini? Tindakan ini tidak dapat dibatalkan.
+          </p>
+        </div>
+        <div class="items-center px-4 py-3">
+          <button
+            id="confirmDelete"
+            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 mr-2"
+          >
+            Hapus
+          </button>
+          <button
+            onclick="closeDeleteModal()"
+            class="px-4 py-2 bg-gray-100 text-gray-700 text-base font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // News data and state
+  interface News {
+    _id: string;
+    title: string;
+    content: string;
+    image: string;
+    category: string;
+    status: string;
+    viewCount: number;
+    author: {
+      _id: string;
+      nama: string;
+      username: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+    slug: string;
+  }
+
+  let news: News[] = [];
+  let filteredNews: News[] = [];
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  let selectedNewsId: string | null = null;
+  let isEditing = false;
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+
+  // DOM elements
+  const loadingState = document.getElementById('loadingState');
+  const errorState = document.getElementById('errorState');
+  const newsTable = document.getElementById('newsTable');
+  const newsTableBody = document.getElementById('newsTableBody');
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+  const categoryFilter = document.getElementById('categoryFilter') as HTMLSelectElement;
+  const statusFilter = document.getElementById('statusFilter') as HTMLSelectElement;
+  const resetFilters = document.getElementById('resetFilters');
+  const retryButton = document.getElementById('retryButton');
+  const createNewsBtn = document.getElementById('createNewsBtn');
+
+  // Utility functions
+  function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  // State management
+  function showLoading() {
+    loadingState?.classList.remove('hidden');
+    errorState?.classList.add('hidden');
+    newsTable?.classList.add('hidden');
+  }
+
+  function showError() {
+    loadingState?.classList.add('hidden');
+    errorState?.classList.remove('hidden');
+    newsTable?.classList.add('hidden');
+  }
+
+  function showTable() {
+    loadingState?.classList.add('hidden');
+    errorState?.classList.add('hidden');
+    newsTable?.classList.remove('hidden');
+  }
+
+  // API calls
+  async function fetchNews() {
+    try {
+      showLoading();
+      const response = await fetch(`${API_URL}/news`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      news = data.news || [];
+      filteredNews = [...news];
+      
+      showTable();
+      renderTable();
+      updatePagination();
+      
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      showError();
+    }
+  }
+
+  // Table rendering
+  function renderTable() {
+    if (!newsTableBody) return;
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedNews = filteredNews.slice(startIndex, endIndex);
+    
+    newsTableBody.innerHTML = '';
+    
+    if (paginatedNews.length === 0) {
+      newsTableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+            Tidak ada berita yang ditemukan
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    paginatedNews.forEach(item => {
+      const row = document.createElement('tr');
+      row.className = 'hover:bg-gray-50';
+      
+      row.innerHTML = `
+        <td class="px-6 py-4">
+          <div class="flex items-center">
+            <img
+              src="${item.image || '/images/empty-image-placeholder.webp'}"
+              alt="${item.title}"
+              class="h-12 w-12 rounded-lg object-cover mr-4"
+            />
+            <div>
+              <div class="text-sm font-medium text-gray-900 max-w-xs truncate">
+                ${item.title}
+              </div>
+              <div class="text-sm text-gray-500">
+                ${item.slug}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4">
+          <div class="text-sm text-gray-900">${item.author.nama}</div>
+          <div class="text-sm text-gray-500">@${item.author.username}</div>
+        </td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 text-xs font-medium rounded-full capitalize ${
+            item.category === 'pengumuman' ? 'bg-purple-100 text-purple-800' :
+            item.category === 'kegiatan' ? 'bg-green-100 text-green-800' :
+            'bg-blue-100 text-blue-800'
+          }">
+            ${item.category}
+          </span>
+        </td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 text-xs font-medium rounded-full ${
+            item.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }">
+            ${item.status === 'published' ? 'Published' : 'Draft'}
+          </span>
+        </td>
+        <td class="px-6 py-4">
+          <div class="text-sm text-gray-900">${item.viewCount} views</div>
+        </td>
+        <td class="px-6 py-4 text-sm text-gray-500">
+          <div>Dibuat: ${formatDate(item.createdAt)}</div>
+          <div>Diupdate: ${formatDate(item.updatedAt)}</div>
+        </td>
+        <td class="px-6 py-4">
+          <div class="flex space-x-2">
+            <button
+              onclick="editNews('${item._id}')"
+              class="text-green-600 hover:text-green-800 text-sm font-medium"
+            >
+              Edit
+            </button>
+            <button
+              onclick="deleteNews('${item._id}')"
+              class="text-red-600 hover:text-red-800 text-sm font-medium"
+            >
+              Hapus
+            </button>
+          </div>
+        </td>
+      `;
+      
+      newsTableBody.appendChild(row);
+    });
+    
+    // Update total news counter
+    const totalNewsElement = document.getElementById('totalNews');
+    if (totalNewsElement) {
+      totalNewsElement.textContent = filteredNews.length.toString();
+    }
+  }
+
+  // Pagination
+  function updatePagination() {
+    const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, filteredNews.length);
+    
+    // Update pagination info
+    const showingFrom = document.getElementById('showingFrom');
+    const showingTo = document.getElementById('showingTo');
+    const totalItems = document.getElementById('totalItems');
+    
+    if (showingFrom) showingFrom.textContent = startItem.toString();
+    if (showingTo) showingTo.textContent = endItem.toString();
+    if (totalItems) totalItems.textContent = filteredNews.length.toString();
+    
+    // Update prev/next buttons
+    const prevButton = document.getElementById('prevPage') as HTMLButtonElement;
+    const nextButton = document.getElementById('nextPage') as HTMLButtonElement;
+    
+    if (prevButton) {
+      prevButton.disabled = currentPage === 1;
+    }
+    
+    if (nextButton) {
+      nextButton.disabled = currentPage === totalPages;
+    }
+  }
+
+  // Filtering
+  function applyFilters() {
+    const searchTerm = searchInput?.value.toLowerCase() || '';
+    const categoryValue = categoryFilter?.value || '';
+    const statusValue = statusFilter?.value || '';
+    
+    filteredNews = news.filter(item => {
+      const matchesSearch = item.title.toLowerCase().includes(searchTerm) ||
+                          item.content.toLowerCase().includes(searchTerm);
+      
+      const matchesCategory = !categoryValue || item.category === categoryValue;
+      const matchesStatus = !statusValue || item.status === statusValue;
+      
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+    
+    currentPage = 1;
+    renderTable();
+    updatePagination();
+  }
+
+  // Modal functions
+  function openNewsModal(id: string | null = null) {
+    const modal = document.getElementById('newsModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const form = document.getElementById('newsForm') as HTMLFormElement;
+    
+    isEditing = !!id;
+    selectedNewsId = id;
+    
+    if (modalTitle) {
+      modalTitle.textContent = isEditing ? 'Edit Berita' : 'Tambah Berita';
+    }
+    
+    if (form) {
+      form.reset();
+      
+      if (isEditing && id) {
+        const newsItem = news.find(item => item._id === id);
+        if (newsItem) {
+          (document.getElementById('newsTitle') as HTMLInputElement).value = newsItem.title;
+          (document.getElementById('newsContent') as HTMLTextAreaElement).value = newsItem.content;
+          (document.getElementById('newsCategory') as HTMLSelectElement).value = newsItem.category;
+          (document.getElementById('newsStatus') as HTMLSelectElement).value = newsItem.status;
+        }
+      }
+    }
+    
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeNewsModal() {
+    const modal = document.getElementById('newsModal');
+    if (modal) modal.classList.add('hidden');
+    isEditing = false;
+    selectedNewsId = null;
+  }
+
+  function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.add('hidden');
+    selectedNewsId = null;
+  }
+
+  // Form handling
+  async function handleNewsSubmit(event: Event) {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    try {
+      // Handle image upload if present
+      const imageFile = (document.getElementById('newsImage') as HTMLInputElement)?.files?.[0];
+      let imageUrl = null;
+      
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+        
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: imageFormData
+        });
+        
+        if (!uploadResponse.ok) throw new Error('Failed to upload image');
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.url;
+      }
+      
+      // Prepare news data
+      const newsData = {
+        title: formData.get('title'),
+        content: formData.get('content'),
+        category: formData.get('category'),
+        status: formData.get('status'),
+        ...(imageUrl && { image: imageUrl })
+      };
+      
+      const url = isEditing ? 
+        `${API_URL}/news/${selectedNewsId}` :
+        `${API_URL}/news`;
+      
+      const response = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(newsData)
+      });
+      
+      if (!response.ok) throw new Error('Failed to save news');
+      
+      closeNewsModal();
+      fetchNews();
+      alert(isEditing ? 'Berita berhasil diperbarui' : 'Berita berhasil ditambahkan');
+      
+    } catch (error) {
+      console.error('Error saving news:', error);
+      alert('Gagal menyimpan berita');
+    }
+  }
+
+  async function deleteNews(id: string) {
+    selectedNewsId = id;
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  async function confirmDeleteNews() {
+    if (!selectedNewsId) return;
+
+    try {
+      const response = await fetch(`${API_URL}/news/${selectedNewsId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete news');
+
+      closeDeleteModal();
+      fetchNews();
+      alert('Berita berhasil dihapus');
+    } catch (error) {
+      console.error('Error deleting news:', error);
+      alert('Gagal menghapus berita');
+    }
+  }
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial fetch
+    fetchNews();
+    
+    // Form submission
+    const newsForm = document.getElementById('newsForm');
+    if (newsForm) {
+      newsForm.addEventListener('submit', handleNewsSubmit);
+    }
+    
+    // Create button
+    // createNewsBtn?.addEventListener('click', () => openNewsModal()); // This line is removed
+    
+    // Search and filter listeners
+    searchInput?.addEventListener('input', applyFilters);
+    categoryFilter?.addEventListener('change', applyFilters);
+    statusFilter?.addEventListener('change', applyFilters);
+    
+    // Reset filters
+    resetFilters?.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      if (categoryFilter) categoryFilter.value = '';
+      if (statusFilter) statusFilter.value = '';
+      applyFilters();
+    });
+    
+    // Retry button
+    retryButton?.addEventListener('click', fetchNews);
+    
+    // Pagination
+    document.getElementById('prevPage')?.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+        updatePagination();
+      }
+    });
+    
+    document.getElementById('nextPage')?.addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+        updatePagination();
+      }
+    });
+
+    // Delete confirmation
+    document.getElementById('confirmDelete')?.addEventListener('click', confirmDeleteNews);
+  });
+
+  // Make functions globally available
+  declare global {
+    interface Window {
+      editNews: (id: string) => void;
+      deleteNews: (id: string) => void;
+      closeNewsModal: () => void;
+      closeDeleteModal: () => void;
+    }
+  }
+
+  window.editNews = (id: string) => openNewsModal(id);
+  window.deleteNews = deleteNews;
+  window.closeNewsModal = closeNewsModal;
+  window.closeDeleteModal = closeDeleteModal;
+</script>

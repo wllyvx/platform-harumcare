@@ -1,0 +1,310 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro"
+---
+
+<AdminLayout title="Tambah Berita Baru">
+  <div class="container mx-auto py-6">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">Tambah Berita Baru</h1>
+      <p class="mt-1 text-sm text-gray-600">Buat berita baru untuk ditampilkan di website.</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <form id="createNewsForm" class="p-6 space-y-6">
+        <!-- Title -->
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
+            Judul Berita <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Masukkan judul berita..."
+          />
+        </div>
+
+        <!-- Content -->
+        <div>
+          <label for="content" class="block text-sm font-medium text-gray-700 mb-1">
+            Konten Berita <span class="text-red-500">*</span>
+          </label>
+          <div class="border border-gray-300 rounded-lg p-2">
+            <textarea
+              id="content"
+              name="content"
+              required
+              rows="12"
+              class="w-full px-3 py-2 border-0 focus:ring-0"
+              placeholder="Tulis konten berita di sini..."
+            ></textarea>
+            <div class="border-t pt-2 flex justify-end space-x-2">
+              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="formatText('bold')">
+                <strong>B</strong>
+              </button>
+              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="formatText('italic')">
+                <em>I</em>
+              </button>
+              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="formatText('underline')">
+                <u>U</u>
+              </button>
+              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="addList('bullet')">
+                • List
+              </button>
+              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="addList('number')">
+                1. List
+              </button>
+            </div>
+          </div>
+          <p class="mt-1 text-sm text-gray-500">
+            Tip: Gunakan tombol format di atas untuk mempercantik teks
+          </p>
+        </div>
+
+        <!-- Image Upload -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Gambar Berita
+          </label>
+          <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+            <div class="space-y-1 text-center">
+              <div class="flex flex-col items-center">
+                <img id="imagePreview" class="hidden mb-4 max-h-48 rounded" />
+                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <div class="flex text-sm text-gray-600">
+                <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                  <span>Upload gambar</span>
+                  <input id="image" name="image" type="file" class="sr-only" accept="image/*" onchange="previewImage(event)"/>
+                </label>
+                <p class="pl-1">atau drag and drop</p>
+              </div>
+              <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category and Status -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">
+              Kategori <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="category"
+              name="category"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Pilih Kategori</option>
+              <option value="umum">Umum</option>
+              <option value="kegiatan">Kegiatan</option>
+              <option value="pengumuman">Pengumuman</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+              Status <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="status"
+              name="status"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end space-x-3 pt-6 border-t">
+          <a 
+            href="/admin/news"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Batal
+          </a>
+          <button
+            type="submit"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Simpan Berita
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+  let imageFile: File | null = null;
+
+  // Image preview
+  function previewImage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const preview = document.getElementById('imagePreview') as HTMLImageElement;
+    
+    if (input.files && input.files[0]) {
+      imageFile = input.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        preview.src = e.target?.result as string;
+        preview.classList.remove('hidden');
+      }
+      
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  // Text formatting functions
+  function formatText(type: 'bold' | 'italic' | 'underline') {
+    const textarea = document.getElementById('content') as HTMLTextAreaElement;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    
+    let formattedText = '';
+    switch(type) {
+      case 'bold':
+        formattedText = `**${selectedText}**`;
+        break;
+      case 'italic':
+        formattedText = `*${selectedText}*`;
+        break;
+      case 'underline':
+        formattedText = `_${selectedText}_`;
+        break;
+    }
+    
+    textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+    textarea.focus();
+    textarea.setSelectionRange(start + 2, start + 2 + selectedText.length);
+  }
+
+  function addList(type: 'bullet' | 'number') {
+    const textarea = document.getElementById('content') as HTMLTextAreaElement;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    
+    const lines = selectedText.split('\n');
+    const formattedLines = lines.map((line, index) => {
+      if (type === 'bullet') {
+        return `- ${line}`;
+      } else {
+        return `${index + 1}. ${line}`;
+      }
+    });
+    
+    const formattedText = formattedLines.join('\n');
+    textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+  }
+
+  // Form submission
+  document.getElementById('createNewsForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      
+      // Upload image if exists
+      let imageUrl = null;
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+        
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: imageFormData
+        });
+        
+        if (!uploadResponse.ok) throw new Error('Failed to upload image');
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.url;
+      }
+      
+      // Create news
+      const newsData = {
+        title: formData.get('title'),
+        content: formData.get('content'),
+        category: formData.get('category'),
+        status: formData.get('status'),
+        ...(imageUrl && { image: imageUrl })
+      };
+      
+      const response = await fetch(`${API_URL}/news`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(newsData)
+      });
+      
+      if (!response.ok) throw new Error('Failed to create news');
+      
+      alert('Berita berhasil dibuat!');
+      window.location.href = '/admin/news';
+      
+    } catch (error) {
+      console.error('Error creating news:', error);
+      alert('Gagal membuat berita. Silakan coba lagi.');
+    }
+  });
+
+  // Drag and drop handling
+  const dropZone = document.querySelector('input[type="file"]')?.parentElement?.parentElement?.parentElement;
+  if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e: Event) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e: Event) {
+      dropZone.classList.add('border-blue-500', 'bg-blue-50');
+    }
+
+    function unhighlight(e: Event) {
+      dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e: DragEvent) {
+      const dt = e.dataTransfer;
+      if (dt?.files) {
+        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+        input.files = dt.files;
+        const event = new Event('change', { bubbles: true });
+        input.dispatchEvent(event);
+      }
+    }
+  }
+</script>

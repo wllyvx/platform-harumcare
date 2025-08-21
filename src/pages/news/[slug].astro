@@ -1,0 +1,241 @@
+---
+import PrimaryLayout from '../../layouts/PrimaryLayout.astro';
+
+// News interface
+interface News {
+  _id: string;
+  title: string;
+  content: string;
+  image: string;
+  slug: string;
+  author?: {
+    nama: string;
+    username: string;
+  };
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+}
+
+// Props interface
+interface Props {
+  article: News;
+}
+
+// Ekspor getStaticPaths untuk dynamic routes
+export async function getStaticPaths() {
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+  console.log("Starting getStaticPaths for news...");
+
+  try {
+    console.log("Attempting to fetch news list from ${API_URL}/news...");
+    const response = await fetch(`${API_URL}/news`);
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error! Status: ${response.status}, ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    const news = data.news;
+
+    if (!news || news.length === 0) {
+      console.warn("No news found, returning empty paths array");
+      return [];
+    }
+
+    return news.map((article: News) => ({
+      params: { slug: article.slug },
+      props: { article },
+    }));
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Failed to fetch news list:", error.message);
+    } else {
+      console.error("An unknown error occurred");
+    }
+    return [];
+  }
+}
+
+// Ambil article dari props yang dikirim oleh getStaticPaths
+const { article } = Astro.props;
+
+// Jika article tidak ditemukan dari props, redirect ke halaman 404
+if (!article) {
+  console.warn(`Article not found in props, redirecting to /404...`);
+  return Astro.redirect("/404");
+}
+
+// Gunakan article sebagai news
+const news = article;
+
+// Format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// Get category label
+const getCategoryLabel = (category: string) => {
+  const categories = {
+    'umum': 'Umum',
+    'kegiatan': 'Kegiatan',
+    'pengumuman': 'Pengumuman'
+  };
+  return categories[category as keyof typeof categories] || category;
+};
+---
+
+<PrimaryLayout title={`${news.title} - Harum Care Indonesia`}>
+  <main class="min-h-screen bg-gray-50">
+    <article class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Breadcrumb -->
+      <nav class="mb-8">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+          <li><a href="/" class="hover:text-blue-600">Beranda</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/news" class="hover:text-blue-600">Berita</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li class="text-gray-900">{news.title}</li>
+        </ol>
+      </nav>
+
+      <!-- Article Header -->
+      <header class="mb-8">
+        <div class="mb-4">
+          <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            {getCategoryLabel(news.category)}
+          </span>
+        </div>
+        
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+          {news.title}
+        </h1>
+        
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-gray-600">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <img 
+                src="/images/icons/user-default.svg" 
+                alt="Author" 
+                class="w-6 h-6 rounded-full"
+              />
+              <span>{news.author?.nama || 'Anonymous'}</span>
+            </div>
+            <span>•</span>
+            <time datetime={news.createdAt}>
+              {formatDate(news.createdAt)}
+            </time>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              {news.viewCount} dilihat
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Featured Image -->
+      {news.image && (
+        <div class="mb-8">
+          <img 
+            src={news.image} 
+            alt={news.title}
+            class="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
+          />
+        </div>
+      )}
+
+      <!-- Article Content -->
+      <div class="prose prose-lg max-w-none">
+        <div class="bg-white p-6 md:p-8 rounded-lg shadow-sm">
+          <div class="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            {news.content}
+          </div>
+        </div>
+      </div>
+
+      <!-- Article Footer -->
+      <footer class="mt-8 pt-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-gray-600">
+          <div>
+            <p>Terakhir diperbarui: {formatDate(news.updatedAt)}</p>
+          </div>
+          
+          <div class="flex gap-4">
+            <a 
+              href="/news" 
+              class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Kembali ke Berita
+            </a>
+          </div>
+        </div>
+      </footer>
+    </article>
+  </main>
+</PrimaryLayout>
+
+<style>
+  .prose {
+    color: inherit;
+  }
+  
+  .prose p {
+    margin-bottom: 1.5rem;
+  }
+  
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    color: #1f2937;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .prose h1 { font-size: 2rem; }
+  .prose h2 { font-size: 1.5rem; }
+  .prose h3 { font-size: 1.25rem; }
+  
+  .prose ul, .prose ol {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+  
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .prose blockquote {
+    border-left: 4px solid #3b82f6;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #6b7280;
+  }
+  
+  .prose a {
+    color: #3b82f6;
+    text-decoration: underline;
+  }
+  
+  .prose a:hover {
+    color: #2563eb;
+  }
+</style>

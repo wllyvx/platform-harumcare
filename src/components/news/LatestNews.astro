@@ -1,0 +1,118 @@
+---
+import NewsCard from "./NewsCard.astro";
+
+// News interface
+interface News {
+  _id: string;
+  title: string;
+  content: string;
+  image: string;
+  slug: string;
+  author?: {
+    nama: string;
+    username: string;
+  };
+  category: string;
+  createdAt: string;
+  viewCount: number;
+}
+
+// Props interface
+interface Props {
+  title?: string;
+  subtitle?: string;
+  limit?: number;
+  showViewAll?: boolean;
+  viewAllLink?: string;
+}
+
+const {
+  title = "Berita Terbaru",
+  subtitle = "Dapatkan informasi terbaru seputar kegiatan dan pengumuman kami",
+  limit = 6,
+  showViewAll = true,
+  viewAllLink = "/news"
+} = Astro.props;
+
+// Fetch latest news from API
+let latestNews: News[] = [];
+try {
+  const response = await fetch(`${import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api'}/news/latest?limit=${limit}`);
+  if (response.ok) {
+    latestNews = await response.json();
+  }
+} catch (error) {
+  console.error('Error fetching latest news:', error);
+}
+---
+
+<section class="news-section px-4 py-8 md:py-16">
+  <div class="news-container max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{title}</h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+    </div>
+
+    <!-- News Cards -->
+    {latestNews.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {latestNews.map((news: News) => (
+          <NewsCard
+            _id={news._id}
+            title={news.title}
+            content={news.content}
+            image={news.image}
+            slug={news.slug}
+            author={news.author}
+            category={news.category}
+            createdAt={news.createdAt}
+            viewCount={news.viewCount}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <div class="mb-4">
+          <img 
+            src="/images/empty-image-placeholder.webp" 
+            alt="No news" 
+            class="w-32 h-32 mx-auto opacity-50"
+          />
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Belum Ada Berita</h3>
+        <p class="text-gray-500">Berita terbaru akan muncul di sini</p>
+      </div>
+    )}
+
+    <!-- View All Button -->
+    {showViewAll && latestNews.length > 0 && (
+      <div class="text-center mt-12">
+        <a 
+          href={viewAllLink}
+          class="inline-block px-8 py-3 text-blue-600 border border-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors duration-300 font-medium"
+        >
+          Lihat Semua Berita
+        </a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .news-section {
+    background-color: #ffffff;
+  }
+  
+  .news-container {
+    position: relative;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .news-section {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>

@@ -169,12 +169,7 @@ const formatDate = (dateString: string) => {
         <div class="mb-6 flex flex-col gap-4">
           <div class="flex gap-2 md:gap-4">
             <p class="text-gray-600">
-              <strong>Tanggal Mulai:</strong>
-              {formatDate(campaign.startDate)}
-            </p>
-            <p class="text-gray-600">
-              <strong>Tanggal Berakhir:</strong>
-              {formatDate(campaign.endDate)}
+              Berakhir dalam <span class="font-semibold">{daysLeft} hari</span>
             </p>
           </div>
           <div class="flex items-center gap-2 bg-gray-200 rounded py-4 px-2">
@@ -185,7 +180,7 @@ const formatDate = (dateString: string) => {
               alt="Profil Organisasi"
               class="h-10 w-auto"
             />
-            <p class="text-gray-600">{campaign.organizationName}</p>
+            <p class="text-gray-600">Dibuat oleh <span class="font-semibold text-blue-600">{campaign.organizationName}</span></p>
           </div>
         </div>
         <h2 class="text-2xl font-bold mb-4">Deskripsi Kampanye</h2>
