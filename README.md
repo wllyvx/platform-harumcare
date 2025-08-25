@@ -1,90 +1,167 @@
-# Donation Platform ✨
+# Platform Harum Care Indonesia
 
-Hey there! Welcome to the **Donation Platform** repo! 🎉 This is my chill side project, thrown together in my spare time while sipping coffee or jamming to some lo-fi beats. Built with **Astro JS** and **TailwindCSS** for the frontend, and **Express JS** with **MongoDB** for the backend, this platform is all about making donations *simple*, *clean*, and *user-friendly*.
+Platform donasi online untuk organisasi nirlaba Harum Care Indonesia.
 
-## What's This All About? 🤔
-This is a no-fuss donation platform where users can:
-- Create donation campaigns.
-- Browse existing campaigns.
-- (Hopefully soon) Enjoy cool features like notifications or an admin dashboard.
+## Fitur Utama
 
-I built this to mess around with some trendy tech stacks and create something that could actually do some good. It's a work in progress, so bear with me!
+### 1. Manajemen Kampanye
+- Buat, edit, dan hapus kampanye donasi
+- Upload gambar kampanye
+- Set target donasi dan tanggal berakhir
+- Tracking progress donasi
 
-> **Note**: Since this is a spare-time gig, updates might come at a relaxed pace. Spot a bug or got a wild idea? Hit me up! 😎
+### 2. Manajemen Berita
+- Buat, edit, dan hapus berita
+- Upload gambar berita
+- Kategorisasi berita
+- Status draft/published
 
-## Tech Stack 🛠️
-Here's what powers this project:
-- **Frontend**: Astro JS, TailwindCSS
-- **Backend**: Express JS, MongoDB
-- **Others**: Node.js, npm (or yarn if you're feeling fancy)
+### 3. **Fitur Baru: Relasi News-Campaign**
+- **Berita Terkait Kampanye**: Setiap berita bisa dikaitkan dengan kampanye tertentu
+- **Kampanye Terkait Berita**: Setiap kampanye menampilkan berita terkait
+- **Cross-Reference**: Navigasi mudah antara berita dan kampanye terkait
 
-## Getting Started 🚀
-Wanna run this bad boy locally? Follow these steps:
+#### Cara Kerja Relasi:
+1. **Saat Membuat Berita**: Admin bisa memilih kampanye terkait (opsional)
+2. **Halaman Detail Kampanye**: Menampilkan berita terkait di bagian bawah
+3. **Halaman Detail Berita**: Menampilkan kampanye terkait jika ada
+4. **Auto-Update**: Relasi otomatis diupdate saat berita/kampanye dihapus
+
+#### Endpoint API Baru:
+- `GET /news/campaign/:campaignId` - Berita berdasarkan kampanye
+- `GET /campaigns/:id` - Kampanye dengan berita terkait
+- `GET /news/:slug` - Berita dengan kampanye terkait
+
+#### Field Database Baru:
+- **News Model**: `campaignId` (ObjectId, ref: Campaign)
+- **Campaign Model**: `relatedNews` (Array of ObjectId, ref: News)
+
+### 4. Sistem Donasi
+- Form donasi dengan validasi
+- Multiple payment methods
+- Tracking donatur dan jumlah donasi
+- Generate kode unik untuk setiap donasi
+
+### 5. Autentikasi & Authorization
+- Login/register user
+- Role-based access control (admin/user)
+- JWT token authentication
+
+## Instalasi
 
 ### Prerequisites
-Before you dive in, make sure you have:
-- **Node.js** (v16 or later)
-- **MongoDB** (local or MongoDB Atlas)
-- **Git** (to clone this repo)
+- Node.js (v16+)
+- MongoDB
+- npm atau yarn
 
-### Setup Instructions
-1. **Clone the Repo**
-   ```bash
-   git clone https://github.com/your-username/donation-platform.git
-   cd donation-platform
-   ```
+### Setup Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-2. **Install Dependencies**
-   For the frontend:
-   ```bash
-   cd frontend
-   npm install
-   ```
-   For the backend:
-   ```bash
-   cd backend
-   npm install
-   ```
+### Setup Frontend
+```bash
+npm install
+npm run dev
+```
 
-3. **Set Up Environment Variables**
-   Create a `.env` file in the `backend` folder and add:
-   ```env
-   MONGODB_URI=mongodb://localhost:27017/donation-platform
-   PORT=3000
-   ```
-   Using MongoDB Atlas? Swap `MONGODB_URI` with your Atlas connection string.
+### Environment Variables
+Buat file `.env` di root directory:
+```env
+MONGODB_URI=mongodb://localhost:27017/harumcare
+JWT_SECRET=your_jwt_secret_here
+PUBLIC_API_URL=http://localhost:3000
+```
 
-4. **Run the Backend**
-   ```bash
-   cd backend
-   npm start
-   ```
+## Script Utilitas
 
-5. **Run the Frontend**
-   Open a new terminal and run:
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+### Update Relasi News-Campaign
+Untuk mengupdate kampanye yang sudah ada dengan berita terkait:
+```bash
+cd backend
+node scripts/updateCampaignNews.js
+```
 
-6. Open your browser and head to `http://localhost:4321` (or the port Astro assigns).
+Script ini akan:
+1. Mencari berita yang mungkin terkait dengan kampanye berdasarkan:
+   - Judul berita mengandung judul kampanye
+   - Kategori berita sama dengan kategori kampanye
+   - Konten berita mengandung deskripsi kampanye
+2. Mengupdate field `relatedNews` di model Campaign
+3. Mengupdate field `campaignId` di model News
 
-## Folder Structure 📂
-- **/frontend**: All the Astro JS and TailwindCSS goodness for the UI.
-- **/backend**: Express JS and MongoDB logic lives here.
-- **/docs**: Extra docs (if I get around to writing them).
+## Struktur Database
 
-## Contributing 🤝
-This is a side hustle, so I'm not fully open to a ton of contributions just yet. But if you've got ideas, find a bug, or just wanna chat, open an issue on GitHub or ping me. Virtual coffee chats are always welcome! ☕
+### Campaign Schema
+```javascript
+{
+  title: String,
+  description: String,
+  imageUrl: String,
+  targetAmount: Number,
+  currentAmount: Number,
+  startDate: Date,
+  endDate: Date,
+  donorCount: Number,
+  organizationName: String,
+  organizationLogo: String,
+  category: String,
+  relatedNews: [ObjectId], // Array of News IDs
+  createdAt: Date
+}
+```
 
-## To-Do List 📋
-- Add user authentication 🔐
-- Build an admin dashboard 📊
-- Optimize frontend performance ⚡
-- Maybe add a *dark mode* for extra style points 🌙
+### News Schema
+```javascript
+{
+  title: String,
+  slug: String,
+  content: String,
+  image: String,
+  author: ObjectId, // ref: User
+  category: String,
+  campaignId: ObjectId, // ref: Campaign (optional)
+  status: String, // 'draft' or 'published'
+  viewCount: Number,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-## License 📜
-This project is under the [MIT License](LICENSE). Feel free to use, tweak, or share—just give a little credit, yeah?
+## API Endpoints
 
-## Thanks for Stopping By! 🙌
-Big thanks for checking out my repo! This is a passion project built in my free time, so if it's a bit rough around the edges, cut me some slack, haha. If you dig it, drop a ⭐ on GitHub to keep me motivated. Let's keep the good vibes going! 🚀
+### Campaigns
+- `GET /campaigns` - List semua kampanye
+- `GET /campaigns/:id` - Detail kampanye dengan berita terkait
+- `POST /campaigns` - Buat kampanye baru
+- `PUT /campaigns/:id` - Update kampanye
+- `DELETE /campaigns/:id` - Hapus kampanye
+
+### News
+- `GET /news` - List semua berita
+- `GET /news/latest` - Berita terbaru
+- `GET /news/campaign/:campaignId` - Berita berdasarkan kampanye
+- `GET /news/:slug` - Detail berita dengan kampanye terkait
+- `POST /news` - Buat berita baru
+- `PUT /news/:id` - Update berita
+- `DELETE /news/:id` - Hapus berita
+
+## Kontribusi
+
+1. Fork repository
+2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## Kontak
+
+Harum Care Indonesia - [@harumcare](https://twitter.com/harumcare) - email@harumcare.com
+
+Project Link: [https://github.com/harumcare/platform](https://github.com/harumcare/platform)

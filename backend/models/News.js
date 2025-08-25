@@ -28,6 +28,11 @@ const newsSchema = new mongoose.Schema({
     required: true,
     default: 'umum'
   },
+  campaignId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Campaign',
+    required: false
+  },
   status: {
     type: String,
     enum: ['draft', 'published'],

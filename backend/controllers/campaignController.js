@@ -44,11 +44,19 @@ exports.getCampaignById = async (req, res) => {
       return res.status(404).json({ error: 'Campaign tidak ditemukan' });
     }
     
+    // Get related news for this campaign
+    const News = require('../models/News');
+    const relatedNews = await News.find({ 
+      campaignId: campaign._id,
+      status: 'published'
+    }).sort({ createdAt: -1 }).limit(5);
+    
     // Add status based on end date
     const campaignWithStatus = {
       ...campaign.toObject(),
       status: new Date() > campaign.endDate ? 'ended' : 'active',
-      progress: campaign.targetAmount > 0 ? (campaign.currentAmount / campaign.targetAmount) * 100 : 0
+      progress: campaign.targetAmount > 0 ? (campaign.currentAmount / campaign.targetAmount) * 100 : 0,
+      relatedNews
     };
     
     res.json(campaignWithStatus);

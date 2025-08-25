@@ -1,67 +1,22 @@
 ---
 import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
-import type { ObjectId } from "mongoose";
 
-// Ekspor getStaticPaths
+// Jalankan sebagai SSR agar semua ID bisa diakses tanpa pre-render
+export const prerender = false;
 
+// Ambil campaign berdasarkan params id secara runtime
+const API_URL = import.meta.env.PUBLIC_API_URL;
+const { id } = Astro.params;
 
-export async function getStaticPaths() {
-  const API_URL = import.meta.env.PUBLIC_API_URL;
-  console.log("Starting getStaticPaths execution...");
-
-  try {
-    console.log(
-      "Attempting to fetch campaign list from ${API_URL}/campaigns..."
-    );
-    const response = await fetch(`${API_URL}/campaigns`);
-
-    if (!response.ok) {
-      throw new Error(
-        `HTTP error! Status: ${response.status}, ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-    const campaigns = data.campaigns;
-
-    if (!campaigns || campaigns.length === 0) {
-      console.warn("No campaigns found, returning empty paths array");
-      return [];
-    }
-
-    return campaigns.map((campaign: Props['campaign']) => ({
-      params: { id: campaign._id.toString() },
-      props: { campaign },
-    }));
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Failed to fetch campaign list:", error.message);
-    } else {
-      console.error("An unknown error occurred");
-    }
-    return [];
+let campaign: any = null;
+try {
+  const res = await fetch(`${API_URL}/campaigns/${id}`);
+  if (res.ok) {
+    campaign = await res.json();
   }
+} catch (e) {
+  // noop; akan dialihkan ke 404 di bawah
 }
-
-interface Props {
-  campaign: {
-    _id: ObjectId;
-    title: string;
-    description: string;
-    imageUrl: string;
-    targetAmount: number;
-    currentAmount: number;
-    startDate: string;
-    endDate: string;
-    donorCount: number;
-    organizationName: string;
-    organizationLogo: string;
-    category: string;
-  };
-}
-
-// Ambil campaign dari props yang dikirim oleh getStaticPaths
-const { campaign } = Astro.props;
 
 // Jika campaign tidak ditemukan dari props, redirect ke halaman 404
 if (!campaign) {
@@ -185,6 +140,14 @@ const formatDate = (dateString: string) => {
         </div>
         <h2 class="text-2xl font-bold mb-4">Deskripsi Kampanye</h2>
         <p class="text-gray-600 mb-6">{campaign.description}</p>
+        
+        <!-- Related News Section -->
+        <div id="related-news" class="mt-8">
+          <h3 class="text-xl font-bold mb-4">Berita Terkait</h3>
+          <div id="news-list" class="space-y-4">
+            <!-- News items will be loaded here -->
+          </div>
+        </div>
       </div>
       
       <!-- Sticky Donation Card -->
@@ -339,6 +302,55 @@ const formatDate = (dateString: string) => {
     }
   }
 
+  // Load related news for campaign
+  async function loadRelatedNews(campaignId: string) {
+    try {
+      const response = await fetch(`${API_URL}/news/campaign/${campaignId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch related news');
+      }
+      
+      const data = await response.json();
+      const newsList = document.getElementById('news-list');
+      
+      if (newsList && data.news && data.news.length > 0) {
+        newsList.innerHTML = data.news.map((news: any) => `
+          <div class="bg-white p-4 rounded-lg shadow-sm border">
+            <div class="flex items-start space-x-3">
+              <img 
+                src="${news.image || '/images/empty-image-placeholder.webp'}" 
+                alt="${news.title}"
+                class="w-16 h-16 object-cover rounded"
+              />
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-800 mb-1">
+                  <a href="/news/${news.slug}" class="hover:text-blue-600 transition-colors">
+                    ${news.title}
+                  </a>
+                </h4>
+                <p class="text-sm text-gray-600 mb-2">
+                  ${news.content.substring(0, 100)}${news.content.length > 100 ? '...' : ''}
+                </p>
+                <div class="flex items-center text-xs text-gray-500">
+                  <span>${new Date(news.createdAt).toLocaleDateString('id-ID')}</span>
+                  ${news.author?.nama ? `<span class="mx-2">•</span><span>${news.author.nama}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else if (newsList) {
+        newsList.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada berita terkait untuk kampanye ini.</p>';
+      }
+    } catch (error) {
+      console.error('Error loading related news:', error);
+      const newsList = document.getElementById('news-list');
+      if (newsList) {
+        newsList.innerHTML = '<p class="text-gray-500 text-center py-4">Gagal memuat berita terkait.</p>';
+      }
+    }
+  }
+
   window.addEventListener("load", () => {
     const donateForm = document.querySelector("#donate-form");
     if (donateForm) {
@@ -380,6 +392,12 @@ const formatDate = (dateString: string) => {
       });
     } else {
       console.error("Form donasi tidak ditemukan di DOM");
+    }
+
+    // Load related news when page loads
+    const campaignId = document.querySelector('#donate-form')?.getAttribute('data-campaign-id');
+    if (campaignId) {
+      loadRelatedNews(campaignId);
     }
   });
 </script>

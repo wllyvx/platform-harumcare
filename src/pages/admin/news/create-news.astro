@@ -136,6 +136,23 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
           </div>
         </div>
 
+        <!-- Related Campaign -->
+        <div>
+          <label for="campaignId" class="block text-sm font-medium text-gray-700 mb-1">
+            Kampanye Terkait (Opsional)
+          </label>
+          <select
+            id="campaignId"
+            name="campaignId"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Tidak ada kampanye terkait</option>
+          </select>
+          <p class="mt-1 text-sm text-gray-500">
+            Pilih kampanye jika berita ini terkait dengan kampanye tertentu
+          </p>
+        </div>
+
         <!-- Action Buttons -->
         <div class="flex justify-end space-x-3 pt-6 border-t">
           <a 
@@ -210,10 +227,37 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     }
   }
 
+  // Load campaigns from API
+  async function loadCampaigns() {
+    try {
+      const response = await fetch(`${API_URL}/campaigns`);
+      if (response.ok) {
+        const data = await response.json();
+        const campaigns = data.campaigns || [];
+        const campaignSelect = document.getElementById('campaignId') as HTMLSelectElement;
+        
+        if (campaignSelect) {
+          // Clear existing options except the first one
+          campaignSelect.innerHTML = '<option value="">Tidak ada kampanye terkait</option>';
+          
+          // Add campaign options
+          campaigns.forEach((campaign: any) => {
+            const option = document.createElement('option');
+            option.value = campaign._id;
+            option.textContent = campaign.title;
+            campaignSelect.appendChild(option);
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+    }
+  }
+
   // Setup image preview event listener
   document.addEventListener('DOMContentLoaded', async () => {
-    // Load categories first
-    await loadCategories();
+    // Load categories and campaigns first
+    await Promise.all([loadCategories(), loadCampaigns()]);
     
     const imageInput = document.getElementById('image') as HTMLInputElement;
     if (imageInput) {
@@ -362,6 +406,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         content: formData.get('content'),
         category: category,
         status: formData.get('status'),
+        campaignId: formData.get('campaignId') || null,
         ...(imageUrl && { image: imageUrl })
       };
       

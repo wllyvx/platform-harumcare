@@ -12,6 +12,10 @@ const campaignSchema = new mongoose.Schema({
   organizationName: { type: String },
   organizationLogo: { type: String },
   category: { type: String },
+  relatedNews: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'News'
+  }],
   createdAt: { type: Date, default: Date.now },
 });
 
