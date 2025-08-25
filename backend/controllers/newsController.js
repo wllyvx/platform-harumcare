@@ -152,3 +152,13 @@ exports.getLatestNews = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Get all categories
+exports.getCategories = async (req, res) => {
+  try {
+    const categories = await News.distinct('category');
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

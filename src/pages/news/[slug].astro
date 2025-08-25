@@ -23,54 +23,33 @@ interface Props {
   article: News;
 }
 
-// Ekspor getStaticPaths untuk dynamic routes
-export async function getStaticPaths() {
-  const API_URL = import.meta.env.PUBLIC_API_URL;
-  console.log("Starting getStaticPaths for news...");
+// Ambil slug dari URL params
+const { slug } = Astro.params;
 
+// Fetch article data berdasarkan slug
+let news: News | null = null;
+let error = null;
+
+if (slug) {
   try {
-    console.log("Attempting to fetch news list from ${API_URL}/news...");
-    const response = await fetch(`${API_URL}/news`);
-
-    if (!response.ok) {
-      throw new Error(
-        `HTTP error! Status: ${response.status}, ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-    const news = data.news;
-
-    if (!news || news.length === 0) {
-      console.warn("No news found, returning empty paths array");
-      return [];
-    }
-
-    return news.map((article: News) => ({
-      params: { slug: article.slug },
-      props: { article },
-    }));
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Failed to fetch news list:", error.message);
+    const API_URL = import.meta.env.PUBLIC_API_URL;
+    const response = await fetch(`${API_URL}/news/${slug}`);
+    
+    if (response.ok) {
+      news = await response.json();
     } else {
-      console.error("An unknown error occurred");
+      error = 'Berita tidak ditemukan';
     }
-    return [];
+  } catch (err) {
+    console.error('Error fetching news:', err);
+    error = 'Terjadi kesalahan saat memuat berita';
   }
 }
 
-// Ambil article dari props yang dikirim oleh getStaticPaths
-const { article } = Astro.props;
-
-// Jika article tidak ditemukan dari props, redirect ke halaman 404
-if (!article) {
-  console.warn(`Article not found in props, redirecting to /404...`);
+// Jika tidak ada slug atau terjadi error, redirect ke 404
+if (!slug || error || !news) {
   return Astro.redirect("/404");
 }
-
-// Gunakan article sebagai news
-const news = article;
 
 // Format date
 const formatDate = (dateString: string) => {
@@ -156,6 +135,7 @@ const getCategoryLabel = (category: string) => {
             src={news.image} 
             alt={news.title}
             class="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
+            onerror="console.error('Failed to load image:', this.src)"
           />
         </div>
       )}

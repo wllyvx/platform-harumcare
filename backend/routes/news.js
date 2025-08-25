@@ -6,6 +6,7 @@ const newsController = require('../controllers/newsController');
 // Public routes
 router.get('/', newsController.getAllNews);
 router.get('/latest', newsController.getLatestNews);
+router.get('/categories', newsController.getCategories);
 router.get('/:slug', newsController.getNewsBySlug);
 
 // Protected routes (require authentication)

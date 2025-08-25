@@ -1,0 +1,38 @@
+---
+import PrimaryLayout from '../layouts/PrimaryLayout.astro';
+---
+
+<PrimaryLayout title="404 - Halaman Tidak Ditemukan">
+  <main class="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="mb-8">
+        <h1 class="text-9xl font-bold text-gray-300">404</h1>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Halaman Tidak Ditemukan</h2>
+        <p class="text-gray-600 mb-8">
+          Maaf, halaman yang Anda cari tidak dapat ditemukan atau telah dipindahkan.
+        </p>
+      </div>
+      
+      <div class="space-y-4">
+        <a 
+          href="/" 
+          class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200"
+        >
+          Kembali ke Beranda
+        </a>
+        
+        <div class="flex justify-center space-x-4">
+          <a href="/news" class="text-blue-600 hover:text-blue-700 font-medium">
+            Berita
+          </a>
+          <a href="/campaign" class="text-blue-600 hover:text-blue-700 font-medium">
+            Kampanye
+          </a>
+          <a href="/about" class="text-blue-600 hover:text-blue-700 font-medium">
+            Tentang Kami
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</PrimaryLayout>

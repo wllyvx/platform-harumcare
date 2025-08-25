@@ -67,7 +67,8 @@ router.post('/', authenticateToken, upload.single('image'), (req, res) => {
 
     // Handle success
     uploadStream.on('finish', () => {
-      const imageUrl = `http://localhost:3000/api/upload/image/${uploadStream.id}`;
+      const baseUrl = process.env.PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
+      const imageUrl = `${baseUrl}/api/upload/image/${uploadStream.id}`;
       
       res.json({ 
         message: 'File berhasil diupload ke MongoDB',

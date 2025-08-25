@@ -25,7 +25,7 @@ const newsSchema = new mongoose.Schema({
   },
   category: { 
     type: String,
-    enum: ['umum', 'kegiatan', 'pengumuman'],
+    required: true,
     default: 'umum'
   },
   status: {

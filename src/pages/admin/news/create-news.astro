@@ -42,23 +42,23 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
               class="w-full px-3 py-2 border-0 focus:ring-0"
               placeholder="Tulis konten berita di sini..."
             ></textarea>
-            <div class="border-t pt-2 flex justify-end space-x-2">
-              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="formatText('bold')">
-                <strong>B</strong>
-              </button>
-              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="formatText('italic')">
-                <em>I</em>
-              </button>
-              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="formatText('underline')">
-                <u>U</u>
-              </button>
-              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="addList('bullet')">
-                • List
-              </button>
-              <button type="button" class="px-3 py-1 text-sm border rounded hover:bg-gray-50" onclick="addList('number')">
-                1. List
-              </button>
-            </div>
+                         <div class="border-t pt-2 flex justify-end space-x-2">
+               <button type="button" id="boldBtn" class="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                 <strong>B</strong>
+               </button>
+               <button type="button" id="italicBtn" class="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                 <em>I</em>
+               </button>
+               <button type="button" id="underlineBtn" class="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                 <u>U</u>
+               </button>
+               <button type="button" id="bulletListBtn" class="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                 • List
+               </button>
+               <button type="button" id="numberListBtn" class="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                 1. List
+               </button>
+             </div>
           </div>
           <p class="mt-1 text-sm text-gray-500">
             Tip: Gunakan tombol format di atas untuk mempercantik teks
@@ -81,7 +81,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
               <div class="flex text-sm text-gray-600">
                 <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                   <span>Upload gambar</span>
-                  <input id="image" name="image" type="file" class="sr-only" accept="image/*" onchange="previewImage(event)"/>
+                                     <input id="image" name="image" type="file" class="sr-only" accept="image/*"/>
                 </label>
                 <p class="pl-1">atau drag and drop</p>
               </div>
@@ -96,17 +96,28 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
             <label for="category" class="block text-sm font-medium text-gray-700 mb-1">
               Kategori <span class="text-red-500">*</span>
             </label>
-            <select
-              id="category"
-              name="category"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Pilih Kategori</option>
-              <option value="umum">Umum</option>
-              <option value="kegiatan">Kegiatan</option>
-              <option value="pengumuman">Pengumuman</option>
-            </select>
+            <div class="space-y-2">
+                             <select
+                 id="category"
+                 name="category"
+                 required
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               >
+                 <option value="">Pilih Kategori</option>
+               </select>
+              
+              <!-- Custom Category Input (hidden by default) -->
+              <div id="customCategoryInput" class="hidden">
+                <input
+                  type="text"
+                  id="customCategory"
+                  name="customCategory"
+                  placeholder="Masukkan nama kategori baru..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p class="mt-1 text-xs text-gray-500">Kategori baru akan ditambahkan ke daftar kategori</p>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -167,6 +178,81 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     }
   }
 
+  // Load categories from API
+  async function loadCategories() {
+    try {
+      const response = await fetch(`${API_URL}/news/categories`);
+      if (response.ok) {
+        const categories = await response.json();
+        const categorySelect = document.getElementById('category') as HTMLSelectElement;
+        
+        if (categorySelect) {
+          // Clear existing options except the first one
+          categorySelect.innerHTML = '<option value="">Pilih Kategori</option>';
+          
+          // Add existing categories
+          categories.forEach((category: string) => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+            categorySelect.appendChild(option);
+          });
+          
+          // Add custom option
+          const customOption = document.createElement('option');
+          customOption.value = 'custom';
+          customOption.textContent = '+ Tambah Kategori Baru';
+          categorySelect.appendChild(customOption);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  }
+
+  // Setup image preview event listener
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Load categories first
+    await loadCategories();
+    
+    const imageInput = document.getElementById('image') as HTMLInputElement;
+    if (imageInput) {
+      imageInput.addEventListener('change', previewImage);
+    }
+
+    // Setup text formatting buttons
+    const boldBtn = document.getElementById('boldBtn');
+    const italicBtn = document.getElementById('italicBtn');
+    const underlineBtn = document.getElementById('underlineBtn');
+    const bulletListBtn = document.getElementById('bulletListBtn');
+    const numberListBtn = document.getElementById('numberListBtn');
+
+    if (boldBtn) boldBtn.addEventListener('click', () => formatText('bold'));
+    if (italicBtn) italicBtn.addEventListener('click', () => formatText('italic'));
+    if (underlineBtn) underlineBtn.addEventListener('click', () => formatText('underline'));
+    if (bulletListBtn) bulletListBtn.addEventListener('click', () => addList('bullet'));
+    if (numberListBtn) numberListBtn.addEventListener('click', () => addList('number'));
+
+    // Setup category selection handling
+    const categorySelect = document.getElementById('category') as HTMLSelectElement;
+    const customCategoryInput = document.getElementById('customCategoryInput') as HTMLDivElement;
+    const customCategoryField = document.getElementById('customCategory') as HTMLInputElement;
+
+    if (categorySelect) {
+      categorySelect.addEventListener('change', () => {
+        if (categorySelect.value === 'custom') {
+          customCategoryInput.classList.remove('hidden');
+          customCategoryField.required = true;
+          categorySelect.required = false;
+        } else {
+          customCategoryInput.classList.add('hidden');
+          customCategoryField.required = false;
+          categorySelect.required = true;
+        }
+      });
+    }
+  });
+
   // Text formatting functions
   function formatText(type: 'bold' | 'italic' | 'underline') {
     const textarea = document.getElementById('content') as HTMLTextAreaElement;
@@ -211,6 +297,34 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
   }
 
+  // Fungsi untuk upload gambar ke server
+  async function uploadImage(file: File) {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+             const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+      
+             const result = await response.json();
+       return result.imageUrl; // Server mengembalikan { imageUrl: "path/to/image" }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  }
+
   // Form submission
   document.getElementById('createNewsForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -219,33 +333,39 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
       
-      // Upload image if exists
-      let imageUrl = null;
-      if (imageFile) {
-        const imageFormData = new FormData();
-        imageFormData.append('image', imageFile);
-        
-        const uploadResponse = await fetch(`${API_URL}/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: imageFormData
-        });
-        
-        if (!uploadResponse.ok) throw new Error('Failed to upload image');
-        const uploadResult = await uploadResponse.json();
-        imageUrl = uploadResult.url;
+      // Validate and handle category selection
+      let category = formData.get('category') as string;
+      if (category === 'custom') {
+        const customCategory = formData.get('customCategory') as string;
+        if (!customCategory || customCategory.trim() === '') {
+          alert('Silakan masukkan nama kategori baru');
+          return;
+        }
+        category = customCategory.trim();
+      } else if (!category) {
+        alert('Silakan pilih kategori');
+        return;
       }
       
+      // Upload image if exists
+      let imageUrl = null;
+             if (imageFile) {
+         imageUrl = await uploadImage(imageFile);
+        if (!imageUrl) {
+          throw new Error('Failed to upload image');
+        }
+      }
+
       // Create news
       const newsData = {
         title: formData.get('title'),
         content: formData.get('content'),
-        category: formData.get('category'),
+        category: category,
         status: formData.get('status'),
         ...(imageUrl && { image: imageUrl })
       };
+      
+      console.log('Sending news data:', newsData);
       
       const response = await fetch(`${API_URL}/news`, {
         method: 'POST',
@@ -288,11 +408,15 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     });
 
     function highlight(e: Event) {
-      dropZone.classList.add('border-blue-500', 'bg-blue-50');
+      if (dropZone) {
+        dropZone.classList.add('border-blue-500', 'bg-blue-50');
+      }
     }
 
     function unhighlight(e: Event) {
-      dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+      if (dropZone) {
+        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+      }
     }
 
     dropZone.addEventListener('drop', handleDrop, false);
@@ -302,8 +426,9 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
       if (dt?.files) {
         const input = document.querySelector('input[type="file"]') as HTMLInputElement;
         input.files = dt.files;
-        const event = new Event('change', { bubbles: true });
-        input.dispatchEvent(event);
+        // Trigger change event manually
+        const changeEvent = new Event('change', { bubbles: true });
+        input.dispatchEvent(changeEvent);
       }
     }
   }
