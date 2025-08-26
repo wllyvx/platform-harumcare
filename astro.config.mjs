@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
-import netlify from '@astrojs/netlify';
+import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
@@ -9,7 +9,7 @@ export default defineConfig({
       plugins: [tailwindcss()],
   },
 
-  adapter: netlify(),
+  adapter: vercel(),
   
   // Enable SSR for dynamic routes
   output: 'server',
