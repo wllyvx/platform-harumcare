@@ -6,10 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "build:backend": "cd backend && npm run build",
-    "build:all": "npm run build:backend && npm run build",
-    "vercel-build": "npm run build:all"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/vercel": "^8.0.0",

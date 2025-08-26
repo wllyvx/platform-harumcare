@@ -1,13 +1,3 @@
 {
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist",
-  "framework": "astro",
-  "functions": {
-    "src/pages/**/*.astro": {
-      "runtime": "@astrojs/vercel"
-    }
-  },
-  "env": {
-    "PUBLIC_API_URL": "@public_api_url"
-  }
+  "framework": "astro"
 }
