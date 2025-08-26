@@ -61,6 +61,7 @@
         if (result.token) {
           localStorage.setItem('token', result.token);
           localStorage.setItem('role', result.role);
+          localStorage.setItem('userName', result.nama);
         }
         return result;
       } catch (error) {

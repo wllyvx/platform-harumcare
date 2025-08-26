@@ -93,8 +93,10 @@
 
     if (authNav) {
       if (userToken) {
+        const userName = localStorage.getItem("userName") || "User";
+        const displayName = userRole === "admin" ? `Admin ${userName}` : userName;
         authNav.innerHTML = `
-          <span class="py-4 px-2 text-gray-500">Welcome, ${userRole}</span>
+          <span class="py-4 px-2 text-gray-500">Welcome, ${displayName}</span>
           <a href="/auth/logout" id="logout-link" class="py-2 px-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-300 transition duration-300">Logout</a>
           ${userRole === "admin" ? '<a href="/admin/" class="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-300">Admin Panel</a>' : ""}
         `;
@@ -107,8 +109,10 @@
 
     if (authNavMobile) {
       if (userToken) {
+        const userName = localStorage.getItem("userName") || "User";
+        const displayName = userRole === "admin" ? `Admin ${userName}` : userName;
         authNavMobile.innerHTML = `
-          <span class="block text-sm px-2 py-2 text-gray-500">Welcome, ${userRole}</span>
+          <span class="block text-sm px-2 py-2 text-gray-500">Welcome, ${displayName}</span>
           <a href="/auth/logout" id="logout-link-mobile" class="block text-sm px-2 py-2 text-white bg-red-500 font-semibold rounded hover:bg-red-300 transition duration-300">Logout</a>
           ${userRole === "admin" ? '<a href="/admin/" class="block text-sm px-2 py-2 text-white bg-blue-500 font-semibold rounded hover:bg-blue-600 transition duration-300">Admin Panel</a>' : ""}
         `;
@@ -153,6 +157,7 @@
         console.log("Logging out (desktop)...");
         localStorage.removeItem("token");
         localStorage.removeItem("role");
+        localStorage.removeItem("userName");
         window.location.href = "/";
       });
     }
@@ -165,6 +170,7 @@
         console.log("Logging out (mobile)...");
         localStorage.removeItem("token");
         localStorage.removeItem("role");
+        localStorage.removeItem("userName");
         window.location.href = "/";
       });
     }
