@@ -2,6 +2,7 @@
 import PrimaryLayout from "../layouts/PrimaryLayout.astro";
 import LatestCampaign from "../components/campaign/LatestCampaign.astro";
 import Hero from "../components/home/Hero.astro";
+import MenuIcons from "../components/home/MenuIcons.astro";
 import LatestNews from "../components/news/LatestNews.astro";
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
@@ -37,7 +38,8 @@ const campaignData = await fetchCampaigns();
 ---
 
 <PrimaryLayout>
-  <Hero />
+  <Hero campaigns={campaignData.campaigns?.slice(0,3)} />
+  <MenuIcons />
   <LatestNews />
   <LatestCampaign
     campaigns={campaignData.campaigns}
