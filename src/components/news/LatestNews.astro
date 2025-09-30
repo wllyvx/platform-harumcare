@@ -56,20 +56,22 @@ try {
 
     <!-- News Cards -->
     {latestNews.length > 0 ? (
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {latestNews.map((news: News) => (
-          <NewsCard
-            _id={news._id}
-            title={news.title}
-            content={news.content}
-            image={news.image}
-            slug={news.slug}
-            author={news.author}
-            category={news.category}
-            createdAt={news.createdAt}
-            viewCount={news.viewCount}
-          />
-        ))}
+      <div class="news-scroll-container">
+        <div class="news-scroll-wrapper">
+          {latestNews.map((news: News) => (
+            <NewsCard
+              _id={news._id}
+              title={news.title}
+              content={news.content}
+              image={news.image}
+              slug={news.slug}
+              author={news.author}
+              category={news.category}
+              createdAt={news.createdAt}
+              viewCount={news.viewCount}
+            />
+          ))}
+        </div>
       </div>
     ) : (
       <div class="text-center py-12">
@@ -108,11 +110,48 @@ try {
     position: relative;
   }
   
+  /* Horizontal scroll container */
+  .news-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .news-scroll-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .news-scroll-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  
+  .news-scroll-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  
+  .news-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  .news-scroll-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    min-width: max-content;
+  }
+  
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .news-section {
       padding-left: 1rem;
       padding-right: 1rem;
+    }
+    
+    .news-scroll-wrapper {
+      gap: 1rem;
     }
   }
 </style>
