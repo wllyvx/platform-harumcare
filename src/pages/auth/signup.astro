@@ -122,7 +122,7 @@ if (form && passwordInput && confirmPasswordInput) {
 
             if (response.ok) {
                 alert('Pendaftaran berhasil!');
-                window.location.href = '/login?registered=true';
+                window.location.href = '/auth/login?registered=true';
             } else {
                 const error = await response.json();
                 alert(error.error || 'Terjadi kesalahan saat mendaftar');
