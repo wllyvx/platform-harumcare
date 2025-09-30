@@ -313,6 +313,21 @@ const formatDate = (dateString: string) => {
                   />
                 </div>
               </div>
+              <div>
+                <label for="donation-message" class="block text-sm font-semibold text-gray-700 mb-2">Pesan Donasi</label>
+                <textarea
+                  id="donation-message"
+                  name="donation-message"
+                  rows="3"
+                  maxlength="500"
+                  class="mt-1 py-3 px-4 block w-full rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 resize-none"
+                  placeholder="Tuliskan pesan dukungan atau doa untuk kampanye ini (opsional)"
+                  disabled={!isCampaignActive}
+                ></textarea>
+                <div class="mt-1 text-xs text-gray-500 text-right">
+                  <span id="message-counter">0</span>/500 karakter
+                </div>
+              </div>
               <button
                 type="submit"
                 class={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
@@ -342,7 +357,8 @@ const formatDate = (dateString: string) => {
   async function initiatePayment(
     amount: number,
     campaignId: string,
-    donorName: string
+    donorName: string,
+    message: string
   ) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -368,7 +384,7 @@ const formatDate = (dateString: string) => {
             paymentMethod: "bank_transfer", // Default payment method
             donorName: donorName || "Anonymous",
             isAnonymous: !donorName,
-            message: "",
+            message: message || "",
             uniqueCode,
           }),
         }
@@ -503,6 +519,31 @@ const formatDate = (dateString: string) => {
     }
   }
 
+  // Setup message character counter
+  function setupMessageCounter() {
+    const messageInput = document.querySelector<HTMLTextAreaElement>('#donation-message');
+    const messageCounter = document.querySelector('#message-counter');
+    
+    if (messageInput && messageCounter) {
+      messageInput.addEventListener('input', () => {
+        const currentLength = messageInput.value.length;
+        messageCounter.textContent = currentLength.toString();
+        
+        // Change color based on character count
+        if (currentLength > 450) {
+          messageCounter.classList.add('text-red-500');
+          messageCounter.classList.remove('text-gray-500');
+        } else if (currentLength > 400) {
+          messageCounter.classList.add('text-orange-500');
+          messageCounter.classList.remove('text-gray-500', 'text-red-500');
+        } else {
+          messageCounter.classList.add('text-gray-500');
+          messageCounter.classList.remove('text-orange-500', 'text-red-500');
+        }
+      });
+    }
+  }
+
   // Format currency input with thousand separators
   function setupCurrencyFormatting() {
     const amountInput = document.querySelector<HTMLInputElement>('#donation-amount');
@@ -593,6 +634,7 @@ const formatDate = (dateString: string) => {
     setupQuickAmountButtons();
     setupProgressiveDisclosure();
     setupCurrencyFormatting();
+    setupMessageCounter();
 
     const donateForm = document.querySelector("#donate-form");
     if (donateForm) {
@@ -602,8 +644,9 @@ const formatDate = (dateString: string) => {
 
         const amountInput = document.querySelector<HTMLInputElement>("#donation-amount");
         const donorNameInput = document.querySelector<HTMLInputElement>("#donor-name");
+        const messageInput = document.querySelector<HTMLTextAreaElement>("#donation-message");
 
-        if (!amountInput || !donorNameInput) {
+        if (!amountInput || !donorNameInput || !messageInput) {
           console.error("Required form elements not found");
           return;
         }
@@ -612,6 +655,7 @@ const formatDate = (dateString: string) => {
         const formattedAmount = amountInput.value;
         const amount = parseInt(formattedAmount.replace(/[^0-9]/g, '')) || 0;
         const donorName = donorNameInput.value;
+        const message = messageInput.value;
         const campaignId = donateForm.getAttribute("data-campaign-id");
 
         if (amount < 1000) {
@@ -624,7 +668,7 @@ const formatDate = (dateString: string) => {
           return;
         }
 
-        const result = await initiatePayment(amount, campaignId, donorName);
+        const result = await initiatePayment(amount, campaignId, donorName, message);
         console.log("Payment initiation response:", result);
       });
     } else {
