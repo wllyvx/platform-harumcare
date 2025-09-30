@@ -303,13 +303,11 @@ const formatDate = (dateString: string) => {
                 <div class="relative">
                   <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">Rp</span>
                   <input
-                    type="number"
+                    type="text"
                     id="donation-amount"
                     name="donation-amount"
-                    min="1000"
-                    step="1000"
                     class="mt-1 py-3 pl-10 pr-4 block w-full rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200"
-                    placeholder="Masukkan jumlah"
+                    placeholder="1.000.000"
                     required
                     disabled={!isCampaignActive}
                   />
@@ -460,10 +458,11 @@ const formatDate = (dateString: string) => {
         button.classList.remove('border-gray-200', 'bg-white');
         button.classList.add('border-blue-500', 'bg-blue-100', 'text-blue-700');
         
-        // Set amount input value
+        // Set amount input value with formatting
         const amount = button.getAttribute('data-amount');
         if (amountInput && amount) {
-          amountInput.value = amount;
+          const formattedAmount = parseInt(amount).toLocaleString('id-ID');
+          amountInput.value = formattedAmount;
           amountInput.focus();
         }
         
@@ -504,30 +503,87 @@ const formatDate = (dateString: string) => {
     }
   }
 
-  // Format currency input
+  // Format currency input with thousand separators
   function setupCurrencyFormatting() {
     const amountInput = document.querySelector<HTMLInputElement>('#donation-amount');
     
     if (amountInput) {
+      // Function to format number with thousand separators
+      const formatNumber = (value: string) => {
+        const numValue = value.replace(/[^0-9]/g, '');
+        if (!numValue) return '';
+        
+        const number = parseInt(numValue);
+        return number.toLocaleString('id-ID');
+      };
+
+      // Function to parse formatted number back to integer
+      const parseFormattedNumber = (value: string) => {
+        return parseInt(value.replace(/[^0-9]/g, '')) || 0;
+      };
+
+      // Track if user is actively typing
+      let isUserTyping = false;
+
+      amountInput.addEventListener('focus', () => {
+        // Clear the field when user focuses (if it contains default value)
+        if (amountInput.value === '1.000' || amountInput.value === '') {
+          amountInput.value = '';
+          isUserTyping = true;
+        }
+      });
+
       amountInput.addEventListener('input', (e) => {
         const target = e.target as HTMLInputElement;
-        let value = target.value.replace(/[^0-9]/g, '');
+        isUserTyping = true;
         
-        if (value) {
-          const numValue = parseInt(value);
-          if (numValue < 1000) {
-            target.value = '1000';
-          } else {
-            target.value = numValue.toString();
-          }
-        }
+        // Get cursor position before formatting
+        const cursorPosition = target.selectionStart || 0;
+        const oldLength = target.value.length;
+        
+        // Format the value
+        const formattedValue = formatNumber(target.value);
+        target.value = formattedValue;
+        
+        // Calculate new cursor position
+        const newLength = formattedValue.length;
+        const lengthDiff = newLength - oldLength;
+        const newCursorPosition = Math.max(0, cursorPosition + lengthDiff);
+        
+        // Set cursor position after formatting
+        setTimeout(() => {
+          target.setSelectionRange(newCursorPosition, newCursorPosition);
+        }, 0);
       });
       
       amountInput.addEventListener('blur', (e) => {
         const target = e.target as HTMLInputElement;
-        if (target.value && parseInt(target.value) < 1000) {
-          target.value = '1000';
+        const parsedValue = parseFormattedNumber(target.value);
+        
+        // Only set default if field is empty or user hasn't typed anything
+        if (!isUserTyping && (parsedValue === 0 || target.value === '')) {
+          target.value = '1.000';
+        } else if (parsedValue > 0 && parsedValue < 1000) {
+          target.value = '1.000';
+        } else if (parsedValue >= 1000) {
+          target.value = parsedValue.toLocaleString('id-ID');
         }
+        
+        isUserTyping = false;
+      });
+
+      // Handle paste events
+      amountInput.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData?.getData('text') || '';
+        const formattedValue = formatNumber(pasteData);
+        amountInput.value = formattedValue;
+        isUserTyping = true;
+      });
+
+      // Handle keydown to detect when user starts typing
+      amountInput.addEventListener('keydown', () => {
+        isUserTyping = true;
       });
     }
   }
@@ -552,7 +608,9 @@ const formatDate = (dateString: string) => {
           return;
         }
 
-        const amount = Number(amountInput.value);
+        // Parse the formatted amount back to number
+        const formattedAmount = amountInput.value;
+        const amount = parseInt(formattedAmount.replace(/[^0-9]/g, '')) || 0;
         const donorName = donorNameInput.value;
         const campaignId = donateForm.getAttribute("data-campaign-id");
 
