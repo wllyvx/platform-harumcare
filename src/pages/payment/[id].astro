@@ -47,6 +47,40 @@ export const prerender = false;
       <p class="text-red-700">Gagal memuat data donasi. Silakan coba lagi atau hubungi admin.</p>
     </div>
 
+    <!-- Payment Method Selection -->
+    <div id="payment-method-section" class="bg-white rounded-lg p-6 mb-6 border border-gray-200 hidden">
+      <h2 class="text-xl font-semibold mb-4">Pilih Metode Pembayaran</h2>
+      <div class="space-y-3">
+        <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+          <input type="radio" name="payment-method" value="bank_transfer" class="mr-3 text-blue-600 focus:ring-blue-500" checked>
+          <div class="flex items-center">
+            <span class="text-2xl mr-3">🏦</span>
+            <div>
+              <div class="font-semibold text-gray-800">Transfer Bank</div>
+              <div class="text-sm text-gray-600">Transfer ke rekening bank kami</div>
+            </div>
+          </div>
+        </label>
+        <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+          <input type="radio" name="payment-method" value="e_wallet" class="mr-3 text-blue-600 focus:ring-blue-500">
+          <div class="flex items-center">
+            <span class="text-2xl mr-3">💳</span>
+            <div>
+              <div class="font-semibold text-gray-800">E-Wallet</div>
+              <div class="text-sm text-gray-600">Pembayaran melalui dompet digital</div>
+            </div>
+          </div>
+        </label>
+      </div>
+      <button 
+        type="button" 
+        id="confirm-payment-method" 
+        class="w-full mt-4 py-3 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+      >
+        Konfirmasi Metode Pembayaran
+      </button>
+    </div>
+
     <form id="upload-proof-form" class="bg-white rounded-md p-8 space-y-4 hidden border border-gray-200" data-donation-id="" data-campaign-id="">
       <div class="">
         <label for="proof-input" class="block text-xl font-semibold">Unggah Bukti Transfer</label>
@@ -85,15 +119,17 @@ export const prerender = false;
     const loading = document.getElementById("loading");
     const error = document.getElementById("error");
     const paymentDetails = document.getElementById("payment-details");
+    const paymentMethodSection = document.getElementById("payment-method-section");
     const uploadForm = document.getElementById("upload-proof-form");
 
-    if (!loading || !error || !paymentDetails || !uploadForm) {
+    if (!loading || !error || !paymentDetails || !paymentMethodSection || !uploadForm) {
       console.error("Required DOM elements not found");
       return;
     }
 
     loading.classList.remove("hidden");
     paymentDetails.classList.add("hidden");
+    paymentMethodSection.classList.add("hidden");
     error.classList.add("hidden");
     uploadForm.classList.add("hidden");
 
@@ -139,12 +175,12 @@ export const prerender = false;
       uploadFormElement.setAttribute("data-campaign-id", donation.campaignId);
 
       loading.classList.add("hidden");
-      paymentDetails.classList.remove("hidden");
-      uploadForm.classList.remove("hidden");
-    } catch (error: unknown) {
-      console.error("Error fetching donation:", error instanceof Error ? error.message : "Unknown error");
+      paymentMethodSection.classList.remove("hidden");
+    } catch (err: unknown) {
+      console.error("Error fetching donation:", err instanceof Error ? err.message : "Unknown error");
       loading.classList.add("hidden");
-      error.classList.remove("hidden");
+      const errorElement = document.getElementById("error");
+      if (errorElement) errorElement.classList.remove("hidden");
     }
   }
 
@@ -223,9 +259,49 @@ export const prerender = false;
     }
   }
 
+  // Handle payment method confirmation
+  function setupPaymentMethodConfirmation() {
+    const confirmBtn = document.getElementById("confirm-payment-method");
+    const paymentMethodSection = document.getElementById("payment-method-section");
+    const paymentDetails = document.getElementById("payment-details");
+    const uploadForm = document.getElementById("upload-proof-form");
+
+    if (confirmBtn && paymentMethodSection && paymentDetails && uploadForm) {
+      confirmBtn.addEventListener("click", () => {
+        const selectedMethod = document.querySelector('input[name="payment-method"]:checked') as HTMLInputElement;
+        
+        if (!selectedMethod) {
+          alert("Silakan pilih metode pembayaran terlebih dahulu.");
+          return;
+        }
+
+        // Hide payment method section and show payment details
+        paymentMethodSection.classList.add("hidden");
+        paymentDetails.classList.remove("hidden");
+        uploadForm.classList.remove("hidden");
+
+        // Update payment instructions based on selected method
+        const instructionsDiv = paymentDetails.querySelector(".bg-sky-500\\/10");
+        if (instructionsDiv && selectedMethod.value === "e_wallet") {
+          instructionsDiv.innerHTML = `
+            <p class="font-bold text-xl mb-2">Instruksi E-Wallet:</p>
+            <ul class="list-disc px-4">
+              <li>Buka aplikasi e-wallet Anda (GoPay, OVO, DANA, dll)</li>
+              <li>Pilih menu "Transfer" atau "Kirim Uang"</li>
+              <li>Masukkan nomor rekening: <span class="font-semibold">${document.getElementById("account-number")?.textContent}</span></li>
+              <li>Transfer sesuai <span class="italic">jumlah tepat</span> yang tertera di atas <span class="font-semibold">(termasuk kode unik)</span></li>
+              <li>Simpan <span class="font-semibold">bukti transfer</span> untuk diunggah pada formulir di bawah</li>
+            </ul>
+          `;
+        }
+      });
+    }
+  }
+
   window.addEventListener("load", () => {
     fetchDonation();
     setupImagePreview("proof-input", "proof-preview", "preview-proof");
+    setupPaymentMethodConfirmation();
 
     // Setup copy buttons
     const copyAccount = document.getElementById("copy-account");
