@@ -50,7 +50,7 @@ const featuredCampaigns = campaignsWithDaysLeft.slice(0, 6);
     <h2 class="bg-blue-500 text-white text-lg rounded-t-lg w-fit px-3 py-1 font-semibold mb-4">{title}</h2>
     <!-- Campaign Cards -->
     {featuredCampaigns.length > 0 ? (
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 place-content-center">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 place-content-center items-stretch">
         {featuredCampaigns.map((campaign) => (
           <Card
             _id={campaign._id}

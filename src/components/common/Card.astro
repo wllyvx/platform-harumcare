@@ -47,59 +47,77 @@ const formatCurrency = (amount: number) => {
 const trimmedDescription = description.length > 120 ? `${description.substring(0, 120)}...` : description;
 ---
 
-<div class="bg-white rounded-b-2xl overflow-hidden shadow-md group hover:shadow-lg transition-shadow duration-300 max-w-sm">
-  <!-- Badge kategori -->
-  <div class="relative">
-    <img src={imageUrl} alt={title} class="w-full h-48 object-cover group-hover:scale-105 transition-all duration-300" loading="lazy" />
-    <span class="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-      {category}
-    </span>
+<a href={`/campaign/${_id}`} class="block h-full">
+  <div class="bg-white rounded-b-2xl overflow-hidden shadow-md group hover:shadow-lg transition-shadow duration-300 max-w-sm h-full flex flex-col cursor-pointer">
+    <!-- Badge kategori -->
+    <div class="relative flex-shrink-0">
+      <img src={imageUrl} alt={title} class="w-full h-48 object-cover group-hover:scale-105 transition-all duration-300" loading="lazy" />
+      <span class="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+        {category}
+      </span>
+    </div>
+    
+    <div class="p-5 flex flex-col flex-grow">
+      <!-- Detail donasi -->
+      <div class="mb-4 flex-grow">
+        <h3 class="font-bold text-xl mb-2 text-gray-800 group-hover:text-blue-500 transition-colors duration-200 line-clamp-2">{title}</h3>
+        <p class="text-gray-600 text-sm mb-4 line-clamp-3">{trimmedDescription}</p>
+        
+        <!-- Progress bar -->
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+          <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-amber-600 h-2.5 rounded-full" style={`width: ${percentageFunded}%`}></div>
+        </div>
+        
+        <div class="flex justify-between text-sm mb-4">
+          <span class="font-semibold text-blue-600">{formatCurrency(currentAmount)}</span>
+          <span class="text-gray-500">dari {formatCurrency(targetAmount)}</span>
+        </div>
+      </div>
+      
+      <!-- Info tambahan -->
+      <div class="grid grid-cols-3 gap-2 mb-4 text-center flex-shrink-0">
+        <div class="bg-gray-50 p-2 rounded">
+          <p class="text-xs text-gray-500">Terkumpul</p>
+          <p class="font-semibold text-gray-800">{percentageFunded}%</p>
+        </div>
+        <div class="bg-gray-50 p-2 rounded">
+          <p class="text-xs text-gray-500">Donatur</p>
+          <p class="font-semibold text-gray-800">{donorCount}</p>
+        </div>
+        <div class="bg-gray-50 p-2 rounded">
+          <p class="text-xs text-gray-500">Sisa Hari</p>
+          <p class="font-semibold text-gray-800">{daysLeft}</p>
+        </div>
+      </div>
+      
+      <!-- Informasi penggalang dana -->
+      <div class="flex items-center mb-4 flex-shrink-0">
+        <img src={organizationLogo ? organizationLogo : "/images/icons/user-default.svg"} alt={organizationName} class="w-8 h-8 rounded-full mr-2 object-cover" />
+        <span class="text-sm text-gray-600">Oleh <span class="font-medium">{organizationName}</span></span>
+      </div>
+      
+      <!-- Tombol donasi -->
+      <div class="flex-shrink-0">
+        <div class="w-full bg-black text-white p-3 rounded-lg font-medium group-hover:bg-blue-700 transition-colors duration-200 text-center">
+          Donasi Sekarang
+        </div>
+      </div>
+    </div>
   </div>
+</a>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   
-  <div class="p-5 flex flex-col justify-between">
-    <!-- Detail donasi -->
-    <div class="mb-4">
-      <h3 class="font-bold text-xl mb-2 text-gray-800 group-hover:text-blue-500 transition-colors duration-200 line-clamp-2">{title}</h3>
-      <p class="text-gray-600 text-sm mb-4 line-clamp-3">{trimmedDescription}</p>
-      
-      <!-- Progress bar -->
-      <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-        <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-amber-600 h-2.5 rounded-full" style={`width: ${percentageFunded}%`}></div>
-      </div>
-      
-      <div class="flex justify-between text-sm mb-4">
-        <span class="font-semibold text-blue-600">{formatCurrency(currentAmount)}</span>
-        <span class="text-gray-500">dari {formatCurrency(targetAmount)}</span>
-      </div>
-    </div>
-    
-    <!-- Info tambahan -->
-    <div class="grid grid-cols-3 gap-2 mb-4 text-center">
-      <div class="bg-gray-50 p-2 rounded">
-        <p class="text-xs text-gray-500">Terkumpul</p>
-        <p class="font-semibold text-gray-800">{percentageFunded}%</p>
-      </div>
-      <div class="bg-gray-50 p-2 rounded">
-        <p class="text-xs text-gray-500">Donatur</p>
-        <p class="font-semibold text-gray-800">{donorCount}</p>
-      </div>
-      <div class="bg-gray-50 p-2 rounded">
-        <p class="text-xs text-gray-500">Sisa Hari</p>
-        <p class="font-semibold text-gray-800">{daysLeft}</p>
-      </div>
-    </div>
-    
-    <!-- Informasi penggalang dana -->
-    <div class="flex items-center mb-4">
-      <img src={organizationLogo ? organizationLogo : "/images/icons/user-default.svg"} alt={organizationName} class="w-8 h-8 rounded-full mr-2 object-cover" />
-      <span class="text-sm text-gray-600">Oleh <span class="font-medium">{organizationName}</span></span>
-    </div>
-    
-    <!-- Tombol donasi -->
-    <a href={`/campaign/${_id}`}>
-      <button class="w-full bg-black text-white p-3 rounded-lg font-medium group-hover:bg-blue-700 hover:cursor-pointer transition-colors duration-200">
-        Donasi Sekarang
-      </button>
-    </a>
-  </div>
-</div>
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
