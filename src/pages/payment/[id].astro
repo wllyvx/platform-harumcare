@@ -14,10 +14,11 @@ export const prerender = false;
   <section class="w-full relative max-w-xl mx-auto py-8">
     <div class="px-8 text-center">
       <h1 class="text-3xl font-bold mb-1">Selesaikan Donasi Anda</h1>
-      <p class="mb-6">Transfer ke nomor rekening kami di bawah ini lalu upload bukti transfer</p>
+      <p class="mb-6">Pilih metode pembayaran dan ikuti instruksi yang diberikan</p>
     </div>
-    <div id="payment-details" class="bg-white border border-gray-200 p-6 rounded-lg mb-6 hidden">
-      <h2 class="text-xl font-semibold mb-4">Detail Pembayaran</h2>
+    <!-- Bank Transfer Details -->
+    <div id="bank-transfer-details" class="bg-white border border-gray-200 p-6 rounded-lg mb-6 hidden">
+      <h2 class="text-xl font-semibold mb-4">Detail Pembayaran - Transfer Bank</h2>
       <div class="mb-4">
         <p class="text-gray-700 mb-2">Nomor Rekening:</p>
         <div class="flex gap-5">
@@ -34,11 +35,40 @@ export const prerender = false;
         <p class="text-sm text-gray-500 mt-2">*Sudah termasuk kode unik</p>
       </div>
       <div class="bg-sky-500/10 border border-sky-400 text-sky-800 py-4 px-2 rounded-md">
-        <p class="font-bold text-xl mb-2">Instruksi Transfer:</p>
+        <p class="font-bold text-xl mb-2">Instruksi Transfer Bank:</p>
         <ul class="list-disc px-4">
           <li>Transfer sesuai <span class="italic">jumlah tepat</span> yang tertera di atas <span class="font-semibold">(termasuk kode unik)</span></li>
           <li>Cantumkan <span class="font-semibold">nama Anda</span> pada deskripsi transfer</li>
           <li>Simpan <span class="font-semibold">bukti transfer</span> untuk diunggah pada formulir di bawah</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- QRIS Payment Details -->
+    <div id="qris-payment-details" class="bg-white border border-gray-200 p-6 rounded-lg mb-6 hidden">
+      <h2 class="text-xl font-semibold mb-4">Detail Pembayaran - QRIS</h2>
+      <div class="text-center mb-6">
+        <p class="text-gray-700 mb-4">Scan QR Code di bawah ini untuk pembayaran:</p>
+        <div class="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
+          <img src="/images/QRIS.png" alt="QRIS Payment Code" class="w-64 h-64 mx-auto" />
+        </div>
+      </div>
+      <div class="mb-4">
+        <p class="text-gray-700 mb-2">Jumlah Pembayaran:</p>
+        <div class="flex justify-between gap-5">
+          <p id="qris-total-amount" class="bg-green-100 p-4 w-full rounded-md border border-green-300 font-bold text-4xl text-green-500"></p>
+          <button id="copy-qris-amount" class="bg-gray-500 text-white px-2 py-0 rounded-md hover:bg-gray-600 transition">Copy</button>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">*Sudah termasuk kode unik</p>
+      </div>
+      <div class="bg-sky-500/10 border border-sky-400 text-sky-800 py-4 px-2 rounded-md">
+        <p class="font-bold text-xl mb-2">Instruksi Pembayaran QRIS:</p>
+        <ul class="list-disc px-4">
+          <li>Buka aplikasi e-wallet atau mobile banking Anda</li>
+          <li>Pilih menu "Scan QR" atau "QR Code"</li>
+          <li>Scan QR code di atas</li>
+          <li>Pastikan jumlah pembayaran sesuai dengan yang tertera <span class="font-semibold">(termasuk kode unik)</span></li>
+          <li>Simpan <span class="font-semibold">bukti pembayaran</span> untuk diunggah pada formulir di bawah</li>
         </ul>
       </div>
     </div>
@@ -62,12 +92,12 @@ export const prerender = false;
           </div>
         </label>
         <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
-          <input type="radio" name="payment-method" value="e_wallet" class="mr-3 text-blue-600 focus:ring-blue-500">
+          <input type="radio" name="payment-method" value="qris" class="mr-3 text-blue-600 focus:ring-blue-500">
           <div class="flex items-center">
-            <span class="text-2xl mr-3">💳</span>
+            <span class="text-2xl mr-3">📱</span>
             <div>
-              <div class="font-semibold text-gray-800">E-Wallet</div>
-              <div class="text-sm text-gray-600">Pembayaran melalui dompet digital</div>
+              <div class="font-semibold text-gray-800">QRIS</div>
+              <div class="text-sm text-gray-600">Scan QR code untuk pembayaran</div>
             </div>
           </div>
         </label>
@@ -118,17 +148,19 @@ export const prerender = false;
   async function fetchDonation() {
     const loading = document.getElementById("loading");
     const error = document.getElementById("error");
-    const paymentDetails = document.getElementById("payment-details");
+    const bankTransferDetails = document.getElementById("bank-transfer-details");
+    const qrisPaymentDetails = document.getElementById("qris-payment-details");
     const paymentMethodSection = document.getElementById("payment-method-section");
     const uploadForm = document.getElementById("upload-proof-form");
 
-    if (!loading || !error || !paymentDetails || !paymentMethodSection || !uploadForm) {
+    if (!loading || !error || !bankTransferDetails || !qrisPaymentDetails || !paymentMethodSection || !uploadForm) {
       console.error("Required DOM elements not found");
       return;
     }
 
     loading.classList.remove("hidden");
-    paymentDetails.classList.add("hidden");
+    bankTransferDetails.classList.add("hidden");
+    qrisPaymentDetails.classList.add("hidden");
     paymentMethodSection.classList.add("hidden");
     error.classList.add("hidden");
     uploadForm.classList.add("hidden");
@@ -164,13 +196,17 @@ export const prerender = false;
       const baseAmount = donation.amount - uniqueCode;
       
       const totalAmountElement = document.getElementById("total-amount");
+      const qrisTotalAmountElement = document.getElementById("qris-total-amount");
       const uploadFormElement = document.querySelector("#upload-proof-form");
 
-      if (!totalAmountElement || !uploadFormElement) {
+      if (!totalAmountElement || !qrisTotalAmountElement || !uploadFormElement) {
         throw new Error("Required DOM elements for displaying donation details not found");
       }
 
+      // Set amount for both payment methods
       totalAmountElement.textContent = formatCurrency(donation.amount);
+      qrisTotalAmountElement.textContent = formatCurrency(donation.amount);
+      
       uploadFormElement.setAttribute("data-donation-id", donation._id);
       uploadFormElement.setAttribute("data-campaign-id", donation.campaignId);
 
@@ -263,10 +299,11 @@ export const prerender = false;
   function setupPaymentMethodConfirmation() {
     const confirmBtn = document.getElementById("confirm-payment-method");
     const paymentMethodSection = document.getElementById("payment-method-section");
-    const paymentDetails = document.getElementById("payment-details");
+    const bankTransferDetails = document.getElementById("bank-transfer-details");
+    const qrisPaymentDetails = document.getElementById("qris-payment-details");
     const uploadForm = document.getElementById("upload-proof-form");
 
-    if (confirmBtn && paymentMethodSection && paymentDetails && uploadForm) {
+    if (confirmBtn && paymentMethodSection && bankTransferDetails && qrisPaymentDetails && uploadForm) {
       confirmBtn.addEventListener("click", () => {
         const selectedMethod = document.querySelector('input[name="payment-method"]:checked') as HTMLInputElement;
         
@@ -275,25 +312,18 @@ export const prerender = false;
           return;
         }
 
-        // Hide payment method section and show payment details
+        // Hide payment method section
         paymentMethodSection.classList.add("hidden");
-        paymentDetails.classList.remove("hidden");
-        uploadForm.classList.remove("hidden");
-
-        // Update payment instructions based on selected method
-        const instructionsDiv = paymentDetails.querySelector(".bg-sky-500\\/10");
-        if (instructionsDiv && selectedMethod.value === "e_wallet") {
-          instructionsDiv.innerHTML = `
-            <p class="font-bold text-xl mb-2">Instruksi E-Wallet:</p>
-            <ul class="list-disc px-4">
-              <li>Buka aplikasi e-wallet Anda (GoPay, OVO, DANA, dll)</li>
-              <li>Pilih menu "Transfer" atau "Kirim Uang"</li>
-              <li>Masukkan nomor rekening: <span class="font-semibold">${document.getElementById("account-number")?.textContent}</span></li>
-              <li>Transfer sesuai <span class="italic">jumlah tepat</span> yang tertera di atas <span class="font-semibold">(termasuk kode unik)</span></li>
-              <li>Simpan <span class="font-semibold">bukti transfer</span> untuk diunggah pada formulir di bawah</li>
-            </ul>
-          `;
+        
+        // Show appropriate payment details based on selected method
+        if (selectedMethod.value === "bank_transfer") {
+          bankTransferDetails.classList.remove("hidden");
+        } else if (selectedMethod.value === "qris") {
+          qrisPaymentDetails.classList.remove("hidden");
         }
+        
+        // Show upload form
+        uploadForm.classList.remove("hidden");
       });
     }
   }
@@ -306,8 +336,10 @@ export const prerender = false;
     // Setup copy buttons
     const copyAccount = document.getElementById("copy-account");
     const copyAmount = document.getElementById("copy-amount");
+    const copyQrisAmount = document.getElementById("copy-qris-amount");
     const accountNumber = document.getElementById("account-number");
     const totalAmount = document.getElementById("total-amount");
+    const qrisTotalAmount = document.getElementById("qris-total-amount");
 
     async function copyToClipboard(text: string, button: HTMLButtonElement) {
       try {
@@ -339,6 +371,14 @@ export const prerender = false;
         // Hapus format mata uang sebelum menyalin
         const amount = totalAmount.textContent?.replace(/[^0-9]/g, "") || "";
         copyToClipboard(amount, copyAmount as HTMLButtonElement);
+      }
+    });
+
+    copyQrisAmount?.addEventListener("click", () => {
+      if (qrisTotalAmount) {
+        // Hapus format mata uang sebelum menyalin
+        const amount = qrisTotalAmount.textContent?.replace(/[^0-9]/g, "") || "";
+        copyToClipboard(amount, copyQrisAmount as HTMLButtonElement);
       }
     });
 
