@@ -14,15 +14,15 @@
     "deploy:all": "npm run build:all && npm run deploy:backend && npm run deploy:frontend"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^10.0.0",
-    "@astrojs/vercel": "^8.0.0",
+    "@astrojs/cloudflare": "^12.6.9",
     "@astrojs/node": "^9.2.2",
+    "@astrojs/vercel": "^8.0.0",
     "@tailwindcss/vite": "^4.1.7",
     "astro": "^5.7.13",
     "multer": "^2.0.0",
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.40.3"
   }
 }
