@@ -1,0 +1,9 @@
+name = "harumcare-backend"
+main = "dist/index.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "harumcare-backend"
+
+[env.production.vars]
+NODE_ENV = "production"

@@ -2,13 +2,16 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "echo \"Build completed\"",
+    "build:worker": "cp cloudflare-adapter.js dist/index.js",
     "seed:news": "node scripts/seedNews.js",
-    "fix:images": "node scripts/fixImageUrlsSimple.js"
+    "fix:images": "node scripts/fixImageUrlsSimple.js",
+    "deploy": "npm run build:worker && wrangler deploy"
   },
   "keywords": [],
   "author": "",

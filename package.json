@@ -6,14 +6,23 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "build:backend": "cd backend && npm run build",
+    "build:all": "npm run build:backend && npm run build",
+    "deploy:frontend": "npm run build && wrangler pages deploy dist",
+    "deploy:backend": "cd backend && wrangler deploy",
+    "deploy:all": "npm run build:all && npm run deploy:backend && npm run deploy:frontend"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^10.0.0",
     "@astrojs/vercel": "^8.0.0",
     "@astrojs/node": "^9.2.2",
     "@tailwindcss/vite": "^4.1.7",
     "astro": "^5.7.13",
     "multer": "^2.0.0",
     "tailwindcss": "^4.1.7"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
   }
 }

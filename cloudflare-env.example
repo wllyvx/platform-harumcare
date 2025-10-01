@@ -1,0 +1,39 @@
+# Environment Variables untuk Cloudflare Deployment
+
+# ===========================================
+# BACKEND (Cloudflare Workers)
+# ===========================================
+# Set di: Cloudflare Dashboard → Workers & Pages → harumcare-backend → Settings → Variables
+
+# Database Configuration
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/harumcare?retryWrites=true&w=majority
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random
+
+# CORS Configuration (ganti dengan domain Cloudflare Pages Anda)
+CORS_ORIGIN=https://your-project-name.pages.dev
+
+# Server Configuration
+NODE_ENV=production
+
+# File Upload Configuration
+MAX_FILE_SIZE=5242880
+
+# ===========================================
+# FRONTEND (Cloudflare Pages)
+# ===========================================
+# Set di: Cloudflare Dashboard → Pages → your-project → Settings → Environment Variables
+
+# Public API URL (ganti dengan URL backend worker Anda)
+PUBLIC_API_URL=https://harumcare-backend.your-subdomain.workers.dev
+
+# Development
+NODE_ENV=production
+
+# ===========================================
+# CUSTOM DOMAIN (Optional)
+# ===========================================
+# Jika menggunakan custom domain, update:
+# CORS_ORIGIN=https://yourdomain.com
+# PUBLIC_API_URL=https://api.yourdomain.com (jika menggunakan subdomain)

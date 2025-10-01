@@ -1,0 +1,12 @@
+name = "harumcare-backend"
+main = "backend/dist/index.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "harumcare-backend"
+
+[env.production.vars]
+NODE_ENV = "production"
+
+# Environment variables akan di-set di Cloudflare dashboard
+# MONGODB_URI, JWT_SECRET, CORS_ORIGIN, dll
