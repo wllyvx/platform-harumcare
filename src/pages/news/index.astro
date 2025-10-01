@@ -1,6 +1,6 @@
 ---
 import PrimaryLayout from '../../layouts/PrimaryLayout.astro';
-import NewsCard from '../../components/news/NewsCard.astro';
+import NewsCardLarge from '../../components/news/NewsCardLarge.astro';
 
 // News interface
 interface News {
@@ -107,9 +107,9 @@ const categories = [
     <section class="py-12">
       <div class="max-w-7xl mx-auto px-4">
         {news.length > 0 ? (
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10">
             {news.map((item) => (
-              <NewsCard
+              <NewsCardLarge
                 _id={item._id}
                 title={item.title}
                 content={item.content}
