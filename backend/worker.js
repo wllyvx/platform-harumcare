@@ -12,7 +12,7 @@ const app = new Hono();
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-  origin: ['https://your-domain.pages.dev', 'http://localhost:4321'],
+  origin: ['backend-harumcare.willyfr88.workers.dev', 'http://localhost:4321'],
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
