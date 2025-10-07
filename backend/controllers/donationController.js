@@ -229,10 +229,17 @@ exports.getAllDonations = async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
+    // Filter out donations with null campaignId to prevent frontend errors
+    const validDonations = donations.filter(donation => donation.campaignId !== null);
+    
+    if (validDonations.length !== donations.length) {
+      console.warn(`Filtered out ${donations.length - validDonations.length} donations with null campaignId`);
+    }
+
     const total = await Donation.countDocuments(filter);
 
     res.json({
-      donations,
+      donations: validDonations,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total,

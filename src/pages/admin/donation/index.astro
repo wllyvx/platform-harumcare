@@ -614,13 +614,26 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
       const campaignsData = await campaignsResponse.json();
 
       // Process donations data - campaignId is already populated
-      donations = (donationsData.donations || []).map((donation) => ({
-        ...donation,
-        // Extract campaign info from populated campaignId
-        campaignId: donation.campaignId._id,
-        campaignTitle: donation.campaignId.title,
-        campaignImage: donation.campaignId.imageUrl,
-      }));
+      donations = (donationsData.donations || []).map((donation) => {
+        // Handle null/undefined campaignId
+        if (!donation.campaignId) {
+          console.warn(`Donation ${donation._id} has no campaignId`);
+          return {
+            ...donation,
+            campaignId: null,
+            campaignTitle: "Campaign tidak ditemukan",
+            campaignImage: "/images/empty-image-placeholder.webp",
+          };
+        }
+
+        return {
+          ...donation,
+          // Extract campaign info from populated campaignId with null safety
+          campaignId: donation.campaignId._id || donation.campaignId,
+          campaignTitle: donation.campaignId.title || "Campaign tidak ditemukan",
+          campaignImage: donation.campaignId.imageUrl || "/images/empty-image-placeholder.webp",
+        };
+      });
 
       campaigns = campaignsData.campaigns || [];
       filteredDonations = [...donations];
