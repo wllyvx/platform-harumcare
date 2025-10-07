@@ -708,6 +708,24 @@ const formatDate = (dateString: string) => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Silakan login untuk berdonasi.");
+      window.location.href = "/auth/login";
+      return null;
+    }
+
+    // Check if token is expired
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (tokenPayload.exp < currentTime) {
+        alert("Sesi Anda telah berakhir. Silakan login kembali.");
+        localStorage.removeItem("token");
+        window.location.href = "/auth/login";
+        return null;
+      }
+    } catch (e) {
+      alert("Token tidak valid. Silakan login kembali.");
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
       return null;
     }
 
@@ -736,8 +754,30 @@ const formatDate = (dateString: string) => {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Gagal memulai pembayaran");
+        let errorMessage = "Gagal memulai pembayaran";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use status text
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        
+        if (response.status === 403) {
+          errorMessage = "Akses ditolak. Token mungkin tidak valid atau telah berakhir. Silakan login kembali.";
+          localStorage.removeItem("token");
+          setTimeout(() => {
+            window.location.href = "/auth/login";
+          }, 2000);
+        } else if (response.status === 401) {
+          errorMessage = "Anda tidak memiliki akses. Silakan login terlebih dahulu.";
+          localStorage.removeItem("token");
+          setTimeout(() => {
+            window.location.href = "/auth/login";
+          }, 2000);
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -746,8 +786,10 @@ const formatDate = (dateString: string) => {
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error("Error initiating payment:", error.message);
+        alert(`Error initiating payment: ${error.message}`);
       } else {
         console.error("An unknown error occurred during payment initiation");
+        alert("An unknown error occurred during payment initiation");
       }
       return null;
     }

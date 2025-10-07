@@ -6,6 +6,9 @@ const User = require("../models/Users");
 // Create donation
 exports.createDonation = async (req, res) => {
   try {
+    console.log('Create donation - Request body:', req.body);
+    console.log('Create donation - User from token:', req.user);
+    
     const { campaignId, amount, message, paymentMethod, isAnonymous, uniqueCode } = req.body;
     const userId = req.user.userId;
 
