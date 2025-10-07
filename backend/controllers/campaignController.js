@@ -2,7 +2,7 @@ const Campaign = require('../models/Campaign');
 
 exports.getAllCampaigns = async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, status } = req.query;
+    const { page = 1, limit = 100, category, status } = req.query;
     
     let filter = {};
     
@@ -164,13 +164,21 @@ exports.deleteCampaign = async (req, res) => {
       return res.status(404).json({ error: 'Campaign tidak ditemukan' });
     }
     
-    // Check if campaign has donations
+    // Check if campaign has donations and warn admin
     if (campaign.currentAmount > 0) {
-      return res.status(400).json({ error: 'Campaign tidak dapat dihapus karena sudah ada donasi' });
+      // Allow deletion but with warning - admin should be aware of consequences
+      console.warn(`Admin is deleting campaign "${campaign.title}" with ${campaign.currentAmount} in donations and ${campaign.donorCount} donors`);
     }
     
+    // Also delete related donations to maintain data integrity
+    const Donation = require('../models/Donations');
+    await Donation.deleteMany({ campaignId: req.params.id });
+    
     await Campaign.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Campaign berhasil dihapus' });
+    res.json({ 
+      message: 'Campaign berhasil dihapus',
+      warning: campaign.currentAmount > 0 ? 'Campaign yang dihapus memiliki donasi yang juga akan dihapus' : null
+    });
   } catch (err) {
     console.error('Error deleting campaign:', err);
     res.status(500).json({ error: 'Server error' });

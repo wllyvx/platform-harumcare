@@ -284,7 +284,13 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Hapus Campaign</h3>
         <div class="mt-2 px-7 py-3">
           <p class="text-sm text-gray-500">
-            Apakah Anda yakin ingin menghapus campaign ini? Tindakan ini tidak dapat dibatalkan.
+            Apakah Anda yakin ingin menghapus campaign ini? 
+          </p>
+          <p class="text-sm text-red-600 mt-2 font-medium">
+            ⚠️ Jika campaign ini memiliki donasi, semua data donasi juga akan dihapus secara permanen.
+          </p>
+          <p class="text-sm text-gray-500 mt-1">
+            Tindakan ini tidak dapat dibatalkan.
           </p>
         </div>
         <div class="items-center px-4 py-3">
@@ -574,7 +580,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     // Update total campaigns counter
     const totalCampaigns = document.getElementById('totalCampaigns');
     if (totalCampaigns) {
-      totalCampaigns.textContent = filteredCampaigns.length;
+      totalCampaigns.textContent = filteredCampaigns.length.toString();
     }
   }
 
@@ -593,7 +599,6 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
     if (showingFrom) showingFrom.textContent = startItem.toString();
     if (showingTo) showingTo.textContent = endItem.toString();
     if (totalItems) totalItems.textContent = filteredCampaigns.length.toString();
-    if (totalCampaigns) totalCampaigns.textContent = filteredCampaigns.length.toString();
     
     // Update prev/next buttons
     const prevButton = document.getElementById('prevPage') as HTMLButtonElement;
@@ -821,14 +826,25 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         }
       });
 
-      if (!response.ok) throw new Error('Failed to delete campaign');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete campaign');
+      }
 
+      const result = await response.json();
       closeDeleteModal();
       fetchCampaigns(); // Refresh the table
-      alert('Campaign berhasil dihapus');
+      
+      // Show appropriate message based on response
+      if (result.warning) {
+        alert(`Campaign berhasil dihapus.\n\nPeringatan: ${result.warning}`);
+      } else {
+        alert('Campaign berhasil dihapus');
+      }
     } catch (error) {
       console.error('Error deleting campaign:', error);
-      alert('Gagal menghapus campaign');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Gagal menghapus campaign: ${errorMessage}`);
     }
   }
 
