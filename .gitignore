@@ -1,5 +1,6 @@
 # build output
 dist/
+!dist/index.js
 # generated types
 .astro/
 

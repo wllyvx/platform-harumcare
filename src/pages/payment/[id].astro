@@ -1,11 +1,6 @@
 ---
 import PrimaryLayout from "../../layouts/PrimaryLayout.astro";
-
-const bankAccount = "123456789";
-
-const handleCopyAccount = () => {
-    navigator.clipboard.writeText(bankAccount);
-  };
+import rekeningData from "../../data/rekeningData.js";
 
 export const prerender = false;
 ---
@@ -20,10 +15,23 @@ export const prerender = false;
     <div id="bank-transfer-details" class="bg-white border border-gray-200 p-6 rounded-lg mb-6 hidden">
       <h2 class="text-xl font-semibold mb-4">Detail Pembayaran - Transfer Bank</h2>
       <div class="mb-4">
-        <p class="text-gray-700 mb-2">Nomor Rekening:</p>
-        <div class="flex gap-5">
-          <p id="account-number" class="rounded-md bg-gray-100 border border-gray-200 p-4 w-full font-medium text-2xl">{bankAccount}</p>          
-          <button id="copy-account" class="bg-gray-500 text-white px-2 py-0 rounded-md hover:bg-gray-600 transition-colors duration-200">Copy</button>
+        <p class="text-gray-700 mb-2">Pilih Bank:</p>
+        <select id="bank-select" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4">
+          <option value="">-- Pilih Bank --</option>
+          {rekeningData && rekeningData.map((bank: any, index: number) => (
+            <option value={index} data-account={bank.noRekening} data-name={bank.atasNama}>
+              {bank.namaBank} - {bank.noRekening}
+            </option>
+          ))}
+        </select>
+        <div id="selected-bank-details" class="hidden">
+          <p class="text-gray-700 mb-2">Nomor Rekening:</p>
+          <div class="flex gap-5">
+            <p id="account-number" class="rounded-md bg-gray-100 border border-gray-200 p-4 w-full font-medium text-2xl"></p>          
+            <button id="copy-account" class="bg-gray-500 text-white px-2 py-0 rounded-md hover:bg-gray-600 transition-colors duration-200">Copy</button>
+          </div>
+          <p class="text-gray-700 mb-2 mt-2">Atas Nama:</p>
+          <p id="account-name" class="rounded-md bg-gray-100 border border-gray-200 p-4 font-medium text-lg"></p>
         </div>
       </div>
       <div class="mb-4">
@@ -328,10 +336,40 @@ export const prerender = false;
     }
   }
 
+  // Setup bank selection functionality
+  function setupBankSelection() {
+    const bankSelect = document.getElementById("bank-select");
+    const selectedBankDetails = document.getElementById("selected-bank-details");
+    const accountNumber = document.getElementById("account-number");
+    const accountName = document.getElementById("account-name");
+
+    if (bankSelect && selectedBankDetails && accountNumber && accountName) {
+      bankSelect.addEventListener("change", (e) => {
+        const target = e.target as HTMLSelectElement;
+        if (target && target.selectedOptions && target.selectedOptions.length > 0) {
+          const selectedOption = target.selectedOptions[0];
+          if (selectedOption && selectedOption.value !== "") {
+            const account = selectedOption.getAttribute("data-account");
+            const name = selectedOption.getAttribute("data-name");
+            
+            accountNumber.textContent = account;
+            accountName.textContent = name;
+            selectedBankDetails.classList.remove("hidden");
+          } else {
+            selectedBankDetails.classList.add("hidden");
+          }
+        } else {
+          selectedBankDetails.classList.add("hidden");
+        }
+      });
+    }
+  }
+
   window.addEventListener("load", () => {
     fetchDonation();
     setupImagePreview("proof-input", "proof-preview", "preview-proof");
     setupPaymentMethodConfirmation();
+    setupBankSelection();
 
     // Setup copy buttons
     const copyAccount = document.getElementById("copy-account");
