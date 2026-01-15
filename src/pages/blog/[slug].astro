@@ -1,0 +1,325 @@
+---
+import PrimaryLayout from '../../layouts/PrimaryLayout.astro';
+
+// Blog interface
+interface Blog {
+  _id: string;
+  title: string;
+  content: string;
+  image: string;
+  slug: string;
+  author?: {
+    nama: string;
+    username: string;
+  };
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+}
+
+// Props interface
+interface Props {
+  article: Blog;
+}
+
+// Ambil slug dari URL params
+const { slug } = Astro.params;
+
+// Fetch article data berdasarkan slug
+let blog: Blog | null = null;
+let error = null;
+
+if (slug) {
+  try {
+    const API_URL = import.meta.env.PUBLIC_API_URL;
+    const response = await fetch(`${API_URL}/blog/${slug}`);
+    
+    if (response.ok) {
+      blog = await response.json();
+    } else {
+      error = 'Blog tidak ditemukan';
+    }
+  } catch (err) {
+    console.error('Error fetching blog:', err);
+    error = 'Terjadi kesalahan saat memuat blog';
+  }
+}
+
+// Jika tidak ada slug atau terjadi error, redirect ke 404
+if (!slug || error || !blog) {
+  return Astro.redirect("/404");
+}
+
+// Format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// Get category label
+const getCategoryLabel = (category: string) => {
+  const categories = {
+    'umum': 'Umum',
+    'kegiatan': 'Kegiatan',
+    'pengumuman': 'Pengumuman'
+  };
+  return categories[category as keyof typeof categories] || category;
+};
+---
+
+<PrimaryLayout title={`${blog.title} - Harum Care Indonesia`}>
+  <main class="min-h-screen bg-gray-50">
+    <article class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Breadcrumb -->
+      <nav class="mb-8">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+          <li><a href="/" class="hover:text-blue-600">Beranda</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog" class="hover:text-blue-600">Blog</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li class="text-gray-900">{blog.title}</li>
+        </ol>
+      </nav>
+
+      <!-- Article Header -->
+      <header class="mb-8">
+        <div class="mb-4">
+          <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            {getCategoryLabel(blog.category)}
+          </span>
+        </div>
+        
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+          {blog.title}
+        </h1>
+        
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-gray-600">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <img 
+                src="/images/icons/user-default.svg" 
+                alt="Author" 
+                class="w-6 h-6 rounded-full"
+              />
+              <span>{blog.author?.nama || 'Anonymous'}</span>
+            </div>
+            <span>•</span>
+            <time datetime={blog.createdAt}>
+              {formatDate(blog.createdAt)}
+            </time>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              {blog.viewCount} dilihat
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Featured Image -->
+      {blog.image && (
+        <div class="mb-8">
+          <img 
+            src={blog.image} 
+            alt={blog.title}
+            class="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
+            onerror="console.error('Failed to load image:', this.src)"
+          />
+        </div>
+      )}
+
+      <!-- Article Content -->
+      <div class="prose prose-lg max-w-none">
+        <div class="bg-white p-6 md:p-8 rounded-lg shadow-sm">
+          <div class="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            {blog.content}
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Campaign Section -->
+      <div id="related-campaign" class="mt-8">
+        <h3 class="text-xl font-bold mb-4">Kampanye Terkait</h3>
+        <div id="campaign-info" class="bg-white p-6 rounded-lg shadow-sm">
+          <!-- Campaign info will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Article Footer -->
+      <footer class="mt-8 pt-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-gray-600">
+          <div>
+            <p>Terakhir diperbarui: {formatDate(blog.updatedAt)}</p>
+          </div>
+          
+          <div class="flex gap-4">
+            <a 
+              href="/blog" 
+              class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Kembali ke Blog
+            </a>
+          </div>
+        </div>
+      </footer>
+    </article>
+  </main>
+</PrimaryLayout>
+
+<style>
+  .prose {
+    color: inherit;
+  }
+  
+  .prose p {
+    margin-bottom: 1.5rem;
+  }
+  
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    color: #1f2937;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .prose h1 { font-size: 2rem; }
+  .prose h2 { font-size: 1.5rem; }
+  .prose h3 { font-size: 1.25rem; }
+  
+  .prose ul, .prose ol {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+  
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .prose blockquote {
+    border-left: 4px solid #3b82f6;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #6b7280;
+  }
+  
+  .prose a {
+    color: #3b82f6;
+    text-decoration: underline;
+  }
+  
+  .prose a:hover {
+    color: #2563eb;
+  }
+</style>
+
+<script>
+  // Load related campaign for blog
+  async function loadRelatedCampaign() {
+    try {
+      const API_URL = import.meta.env.PUBLIC_API_URL;
+      const blogSlug = window.location.pathname.split('/').pop();
+      
+      const response = await fetch(`${API_URL}/blog/${blogSlug}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog data');
+      }
+      
+      const blogData = await response.json();
+      const campaignInfo = document.getElementById('campaign-info');
+      
+      if (campaignInfo && blogData.relatedCampaign) {
+        const campaign = blogData.relatedCampaign;
+        const endDate = new Date(campaign.endDate);
+        const today = new Date();
+        const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24)));
+        const percentageFunded = Math.min(Math.round((campaign.currentAmount / campaign.targetAmount) * 100), 100);
+        
+        campaignInfo.innerHTML = `
+          <div class="flex flex-col md:flex-row gap-6">
+            <div class="md:w-1/3">
+              <img 
+                src="${campaign.imageUrl || '/images/empty-image-placeholder.webp'}" 
+                alt="${campaign.title}"
+                class="w-full h-48 object-cover rounded-lg"
+              />
+            </div>
+            <div class="md:w-2/3">
+              <h4 class="text-lg font-semibold text-gray-800 mb-2">
+                <a href="/campaign/${campaign._id}" class="hover:text-blue-600 transition-colors">
+                  ${campaign.title}
+                </a>
+              </h4>
+              <p class="text-gray-600 mb-4">
+                ${campaign.description ? campaign.description.substring(0, 150) + '...' : 'Tidak ada deskripsi'}
+              </p>
+              
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium">Progress Donasi</span>
+                    <span class="text-blue-600">${percentageFunded}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                      style="width: ${percentageFunded}%"
+                    ></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Rp ${campaign.currentAmount?.toLocaleString('id-ID') || 0}</span>
+                    <span>Rp ${campaign.targetAmount?.toLocaleString('id-ID') || 0}</span>
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-center">
+                  <div class="bg-gray-50 p-3 rounded">
+                    <p class="text-xs text-gray-500">Sisa Hari</p>
+                    <p class="font-semibold text-gray-800">${daysLeft}</p>
+                  </div>
+                  <div class="bg-gray-50 p-3 rounded">
+                    <p class="text-xs text-gray-500">Donatur</p>
+                    <p class="font-semibold text-gray-800">${campaign.donorCount || 0}</p>
+                  </div>
+                </div>
+                
+                <a 
+                  href="/campaign/${campaign._id}" 
+                  class="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors text-center w-full md:w-auto"
+                >
+                  Lihat Kampanye
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (campaignInfo) {
+        campaignInfo.innerHTML = '<p class="text-gray-500 text-center py-4">Blog ini tidak terkait dengan kampanye tertentu.</p>';
+      }
+    } catch (error) {
+      console.error('Error loading related campaign:', error);
+      const campaignInfo = document.getElementById('campaign-info');
+      if (campaignInfo) {
+        campaignInfo.innerHTML = '<p class="text-gray-500 text-center py-4">Gagal memuat informasi kampanye terkait.</p>';
+      }
+    }
+  }
+
+  // Load related campaign when page loads
+  window.addEventListener('load', loadRelatedCampaign);
+</script>

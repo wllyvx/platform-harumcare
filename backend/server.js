@@ -37,7 +37,8 @@ app.get('/', (req, res) => {
       donations: '/api/donations',
       upload: '/api/upload',
       users: '/api/users',
-      news: '/api/news'
+      news: '/api/news',
+      blog: '/api/blog'
     }
   });
 });
@@ -74,6 +75,10 @@ app.use('/api/users', authenticateToken, restrictToAdmin, userRoutes);
 // news routes
 const newsRoutes = require('./routes/news');
 app.use('/api/news', newsRoutes); // Adjust middleware as needed, e.g., authenticateToken, restrictToAdmin for POST/PUT/DELETE
+
+// blog routes
+const blogRoutes = require('./routes/blog');
+app.use('/api/blog', blogRoutes); // Adjust middleware as needed, e.g., authenticateToken, restrictToAdmin for POST/PUT/DELETE
 
 // Error handling middleware
 app.use((err, req, res, next) => {

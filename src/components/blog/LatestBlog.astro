@@ -1,0 +1,154 @@
+---
+import BlogCard from "./BlogCard.astro";
+
+// Blog interface
+interface Blog {
+  _id: string;
+  title: string;
+  content: string;
+  image: string;
+  slug: string;
+  author?: {
+    nama: string;
+    username: string;
+  };
+  category: string;
+  createdAt: string;
+  viewCount: number;
+}
+
+// Props interface
+interface Props {
+  title?: string;
+  subtitle?: string;
+  limit?: number;
+  showViewAll?: boolean;
+  viewAllLink?: string;
+}
+
+const {
+  title = "Blog Terbaru",
+  subtitle = "Dapatkan informasi terbaru seputar kegiatan dan pengumuman kami",
+  limit = 6,
+  showViewAll = true,
+  viewAllLink = "/blog"
+} = Astro.props;
+
+// Fetch latest blogs from API
+let latestBlogs: Blog[] = [];
+try {
+  const response = await fetch(`${import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api'}/blog/latest?limit=${limit}`);
+  if (response.ok) {
+    latestBlogs = await response.json();
+  }
+} catch (error) {
+  console.error('Error fetching latest blogs:', error);
+}
+---
+
+<section class="blog-section px-4 py-8 md:py-16">
+  <div class="blog-container max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <h2 class="bg-blue-500 text-white text-lg rounded-t-lg w-fit px-3 py-1 font-semibold mb-4">{title}</h2>
+
+    <!-- Blog Cards -->
+    {latestBlogs.length > 0 ? (
+      <div class="blog-scroll-container">
+        <div class="blog-scroll-wrapper">
+          {latestBlogs.map((blog: Blog) => (
+            <BlogCard
+              _id={blog._id}
+              title={blog.title}
+              content={blog.content}
+              image={blog.image}
+              slug={blog.slug}
+              author={blog.author}
+              category={blog.category}
+              createdAt={blog.createdAt}
+              viewCount={blog.viewCount}
+            />
+          ))}
+        </div>
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <div class="mb-4">
+          <img 
+            src="/images/empty-image-placeholder.webp" 
+            alt="No blog" 
+            class="w-32 h-32 mx-auto opacity-50"
+          />
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Belum Ada Blog</h3>
+        <p class="text-gray-500">Blog terbaru akan muncul di sini</p>
+      </div>
+    )}
+
+    <!-- View All Button -->
+    {showViewAll && latestBlogs.length > 0 && (
+      <div class="text-center mt-12">
+        <a 
+          href={viewAllLink}
+          class="inline-block px-8 py-3 text-blue-600 border border-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-colors duration-300 font-medium"
+        >
+          Lihat Semua Blog
+        </a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .blog-section {
+    background-color: #ffffff;
+  }
+  
+  .blog-container {
+    position: relative;
+  }
+  
+  /* Horizontal scroll container */
+  .blog-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .blog-scroll-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .blog-scroll-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  
+  .blog-scroll-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  
+  .blog-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  .blog-scroll-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    min-width: max-content;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .blog-section {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .blog-scroll-wrapper {
+      gap: 1rem;
+    }
+  }
+</style>
