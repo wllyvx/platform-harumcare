@@ -337,7 +337,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
   async function fetchBlogs() {
     try {
       showLoading();
-      const response = await fetch(`${API_URL}/blog`);
+      // Fetch all blogs (both draft and published) for admin
+      const response = await fetch(`${API_URL}/blog?status=all`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -572,7 +573,9 @@ import AdminLayout from "../../../layouts/AdminLayout.astro"
         
         if (!uploadResponse.ok) throw new Error('Failed to upload image');
         const uploadResult = await uploadResponse.json();
-        imageUrl = uploadResult.url;
+        console.log('Upload result:', uploadResult);
+        imageUrl = uploadResult.imageUrl;
+        console.log('Image URL to save:', imageUrl);
       }
       
       // Prepare blog data

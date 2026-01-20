@@ -6,10 +6,17 @@ exports.getAllBlogs = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const category = req.query.category;
-    const status = req.query.status || 'published'; // Default to published blogs
+    const status = req.query.status;
     const campaignId = req.query.campaignId;
     
-    const query = { status };
+    const query = {};
+    // Only filter by status if provided, otherwise show all
+    if (status && status !== 'all') {
+      query.status = status;
+    } else if (!status) {
+      // Default to published for public access
+      query.status = 'published';
+    }
     if (category) query.category = category;
     if (campaignId) query.campaignId = campaignId;
 
